@@ -1,5 +1,5 @@
 {
-  "name": "RBG",
+  "name": "phi-battle-game",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -19,7 +19,11 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
+    "@wagmi/core": "^2.6.17",
+    "connectkit": "^1.7.3",
     "lodash.invert": "^4.3.0",
-    "phaser": "^3.70.0"
+    "phaser": "^3.70.0",
+    "phaser3-rex-plugins": "^1.80.2",
+    "viem": "^2.9.25"
   }
 }

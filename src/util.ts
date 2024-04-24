@@ -283,7 +283,11 @@ export async function shake(
   return relativePositionTween(
     scene,
     targets,
-    amounts.map((amount) => ({ [axis]: amount })),
+    amounts.map((amount) => {
+      const vec: Phaser.Types.Math.Vector2Like = { x: 0, y: 0 };
+      vec[axis] = amount;
+      return vec;
+    }),
     frameDuration
   );
 }

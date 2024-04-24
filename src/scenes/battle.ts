@@ -29,6 +29,10 @@ import Menu, { horizontalMenuItems } from 'gate/menu';
 import Dialog from 'gate/dialog';
 import { Entries } from 'type-fest';
 import LoadingScene from 'gate/scenes/loading';
+import signMintData from 'gate/signMint';
+import { SPHERE_QUIZ_NFT_ADDRESS } from 'gate/config';
+import { Hex, createWalletClient, http, parseEther } from 'viem';
+import { scroll } from 'viem/chains';
 
 type Vector2 = Phaser.Math.Vector2;
 
@@ -69,6 +73,7 @@ enum SphereType {
   Green,
   Yellow,
   Key,
+  Dark, //For Damage
 }
 
 const CHARACTER_SPHERE_TYPES = {
@@ -93,6 +98,7 @@ export default class BattleScene extends BaseScene {
   fullScreenButton!: FullScreenButton;
   byline!: Phaser.GameObjects.Image;
   playButton!: PlayButton;
+  scoreText!: Phaser.GameObjects.BitmapText;
 
   // Enemies
   enemySkelly!: Skelly;
@@ -139,6 +145,8 @@ export default class BattleScene extends BaseScene {
   currentTurnResult!: TurnResult;
 
   firstRound = true;
+
+  spheresClearedCount = 0;
 
   constructor() {
     super({
@@ -303,39 +311,19 @@ export default class BattleScene extends BaseScene {
       [Characters.Midori]: new PartyMember(this, Characters.Midori),
     };
 
-    if (new URL(window.location.toString()).search.includes('lowhp')) {
-      this.battleState = new BattleState(
-        {
-          [Characters.Rojo]: { hp: 1, maxHp: 101, atk: 70 },
-          [Characters.Blue]: { hp: 1, maxHp: 93, atk: 25 },
-          [Characters.Midori]: { hp: 1, maxHp: 123, atk: 35 },
-        },
-        { hp: 1, maxHp: 500 }
-      );
-    } else {
-      this.battleState = new BattleState(
-        {
-          [Characters.Rojo]: { hp: 101, maxHp: 101, atk: 70 },
-          [Characters.Blue]: { hp: 93, maxHp: 93, atk: 25 },
-          [Characters.Midori]: { hp: 123, maxHp: 123, atk: 35 },
-        },
-        { hp: 500, maxHp: 500 }
-      );
-    }
-
     const borderTopRight = this.battleBorder.getTopRight<Vector2>();
     this.healthEnemy = new HealthBar(
       this,
       HealthBarType.Enemy,
       borderTopRight.x - 39,
-      borderTopRight.y + 25,
+      borderTopRight.y + 20,
       this.battleState.enemyStatus.hp,
       this.battleState.enemyStatus.maxHp
     );
 
     const pStatus = this.battleState.partyMemberStatuses;
-    const pBarX = this.healthEnemy.barFrame.x - 110;
-    const pBarY = this.healthEnemy.barFrame.y - 11;
+    const pBarX = this.healthEnemy.barFrame.x - 220;
+    const pBarY = this.healthEnemy.barFrame.y - 6;
     this.partyHealth = {
       [Characters.Rojo]: new HealthBar(
         this,
@@ -370,12 +358,16 @@ export default class BattleScene extends BaseScene {
       sound: this.soundText,
     }).setDepth(DEPTH_UI);
 
+    this.scoreText = this.add.bitmapText(0, 0, 'sodapop', 'Score: 0').setTint(TINT_CREAM).setDepth(DEPTH_UI);
+    Align.To.BottomRight(this.scoreText, this.healthEnemy.barFrame, -8, 6);
+
     this.stateMachine = new StateMachine(
       'intro',
       {
         intro: new IntroState(),
         startActionChoice: new StartActionChoiceState(),
         actionChoice: new ActionChoiceState(),
+        quizPhase: new QuizPhaseState(),
         startMovePhase: new StartMovePhaseState(),
         movePhase: new MovePhaseState(),
         swapChoice: new SwapChoiceState(),
@@ -443,6 +435,82 @@ export default class BattleScene extends BaseScene {
     currentMusic.stop();
     newMusic?.play({ seek });
   }
+  showBattleSphereWindow() {
+    this.battleSphereWindow.setVisible(true);
+    this.battleSphereStock.setVisible(true);
+    this.battleSphereWindowOverlay.setVisible(true);
+    for (const sphere of this.spheres) {
+      sphere.sprite.setVisible(true);
+    }
+    for (const stockCount of this.stockCounts) {
+      stockCount.bar.setVisible(true);
+      stockCount.text.setVisible(true);
+    }
+    for (const character of Object.values(Characters)) {
+      this.partyHealth[character].setVisible(false);
+    }
+  }
+
+  hideBattleSphereWindow() {
+    this.battleSphereWindow.setVisible(false);
+    this.battleSphereStock.setVisible(false);
+    this.battleSphereWindowOverlay.setVisible(false);
+    for (const sphere of this.spheres) {
+      sphere.sprite.setVisible(false);
+    }
+    for (const stockCount of this.stockCounts) {
+      stockCount.bar.setVisible(false);
+      stockCount.text.setVisible(false);
+    }
+    for (const character of Object.values(Characters)) {
+      this.partyHealth[character].setVisible(true);
+    }
+  }
+  setBattleState(state: 'low' | 'medium' | 'high') {
+    console.log('Setting battle state:', state);
+    switch (state) {
+      case 'low':
+        this.battleState = new BattleState(
+          {
+            [Characters.Rojo]: { hp: 50, maxHp: 101, atk: 70 },
+            [Characters.Blue]: { hp: 30, maxHp: 93, atk: 25 },
+            [Characters.Midori]: { hp: 70, maxHp: 123, atk: 35 },
+          },
+          { hp: 500, maxHp: 500 }
+        );
+        break;
+      case 'medium':
+        this.battleState = new BattleState(
+          {
+            [Characters.Rojo]: { hp: 80, maxHp: 101, atk: 70 },
+            [Characters.Blue]: { hp: 60, maxHp: 93, atk: 25 },
+            [Characters.Midori]: { hp: 100, maxHp: 123, atk: 35 },
+          },
+          { hp: 500, maxHp: 500 }
+        );
+        break;
+      case 'high':
+        this.battleState = new BattleState(
+          {
+            [Characters.Rojo]: { hp: 101, maxHp: 101, atk: 70 },
+            [Characters.Blue]: { hp: 93, maxHp: 93, atk: 25 },
+            [Characters.Midori]: { hp: 123, maxHp: 123, atk: 35 },
+          },
+          { hp: 500, maxHp: 500 }
+        );
+        break;
+      default:
+        this.battleState = new BattleState(
+          {
+            [Characters.Rojo]: { hp: 80, maxHp: 101, atk: 70 },
+            [Characters.Blue]: { hp: 60, maxHp: 93, atk: 25 },
+            [Characters.Midori]: { hp: 100, maxHp: 123, atk: 35 },
+          },
+          { hp: 500, maxHp: 500 }
+        );
+        break;
+    }
+  }
 }
 
 interface EnemyStatus {
@@ -473,9 +541,12 @@ interface PartyActionResultDefend {
 type PartyActionResult = PartyActionResultAttack | PartyActionResultDefend;
 
 interface EnemyActionResult {
-  target: Characters;
-  damage: number;
-  death: boolean;
+  targets?: Characters[];
+  target?: Characters;
+  damages?: number[];
+  damage?: number;
+  deaths?: boolean[];
+  death?: boolean;
 }
 
 interface TurnResult {
@@ -498,6 +569,7 @@ class BattleState {
       [SphereType.Green]: 0,
       [SphereType.Yellow]: 0,
       [SphereType.Key]: 0,
+      [SphereType.Dark]: 0,
     };
   }
 
@@ -550,26 +622,56 @@ class BattleState {
 
     let enemyActionResult = null;
     if (this.enemyStatus.hp > 0) {
-      const target = randomChoice(
-        Object.values(Characters).filter((character) => this.partyMemberStatuses[character].hp > 0)
-      );
+      // 全体攻撃の条件を満たしているかどうかを判定
+      const isAllOutAttack = Object.values(this.stockCounts).some((count) => count >= 16);
 
-      let damage = Math.floor(Math.random() * 25) + 30;
-      if (turnInputs[target] === BattleActions.Defend) {
-        const sphereType = CHARACTER_SPHERE_TYPES[target];
-        damage -= this.stockCounts[sphereType] + this.stockCounts[SphereType.Yellow];
-        this.stockCounts[sphereType] = 0;
+      if (isAllOutAttack) {
+        // 全体攻撃の場合
+        const targets = Object.values(Characters).filter((character) => this.partyMemberStatuses[character].hp > 0);
+        enemyActionResult = {
+          targets,
+          damages: targets.map((target) => {
+            const sphereType = CHARACTER_SPHERE_TYPES[target];
+            const characterDefense = this.stockCounts[sphereType];
+            const globalDefense = this.stockCounts[SphereType.Yellow];
+            const totalDefense = characterDefense + globalDefense;
+            const targetDamage = Math.floor(Math.random() * 25) + 20;
+            const finalDamage = Math.max(0, targetDamage - totalDefense);
+            this.partyMemberStatuses[target].hp = Math.max(this.partyMemberStatuses[target].hp - finalDamage, 0);
+            return finalDamage;
+          }),
+          deaths: targets.map((target) => this.partyMemberStatuses[target].hp === 0),
+        };
+
+        // 全体攻撃の場合は防御に使用したスフィアを消費
+        for (const target of targets) {
+          const sphereType = CHARACTER_SPHERE_TYPES[target];
+          this.stockCounts[sphereType] = 0;
+        }
         this.stockCounts[SphereType.Yellow] = 0;
+      } else {
+        // 単体攻撃の場合（元の処理）
+        const target = randomChoice(
+          Object.values(Characters).filter((character) => this.partyMemberStatuses[character].hp > 0)
+        );
+
+        let damage = Math.floor(Math.random() * 25) + 30;
+        if (turnInputs[target] === BattleActions.Defend) {
+          const sphereType = CHARACTER_SPHERE_TYPES[target];
+          damage -= this.stockCounts[sphereType] + this.stockCounts[SphereType.Yellow];
+          this.stockCounts[sphereType] = 0;
+          this.stockCounts[SphereType.Yellow] = 0;
+        }
+
+        damage = Math.max(0, damage);
+        this.partyMemberStatuses[target].hp = Math.max(this.partyMemberStatuses[target].hp - damage, 0);
+
+        enemyActionResult = {
+          target,
+          damage,
+          death: this.partyMemberStatuses[target].hp === 0,
+        };
       }
-
-      damage = Math.max(0, damage);
-      this.partyMemberStatuses[target].hp = Math.max(this.partyMemberStatuses[target].hp - damage, 0);
-
-      enemyActionResult = {
-        target,
-        damage,
-        death: this.partyMemberStatuses[target].hp === 0,
-      };
     }
 
     return {
@@ -778,13 +880,13 @@ class PartyMember {
 
     switch (character) {
       case Characters.Rojo:
-        Align.To.LeftCenter(this.sprite, scene.enemySkelly.sprite, 0, -39);
+        Align.To.LeftCenter(this.sprite, scene.enemySkelly.sprite, 120, -39);
         break;
       case Characters.Blue:
-        Align.To.LeftCenter(this.sprite, scene.enemySkelly.sprite, 24, -8);
+        Align.To.LeftCenter(this.sprite, scene.enemySkelly.sprite, 140, -8);
         break;
       case Characters.Midori:
-        Align.To.LeftCenter(this.sprite, scene.enemySkelly.sprite, 0, 23);
+        Align.To.LeftCenter(this.sprite, scene.enemySkelly.sprite, 120, 23);
         break;
     }
     Align.To.BottomCenter(this.ground, this.sprite, -1, -9);
@@ -1049,6 +1151,15 @@ class HealthBar {
     }
   }
 
+  setVisible(visible: boolean) {
+    this.barFrame.setVisible(visible);
+    this.bar1.setVisible(visible);
+    this.bar2.setVisible(visible);
+    this.currentHealthText?.setVisible(visible);
+    this.maxHealthText?.setVisible(visible);
+    this.portrait.setVisible(visible);
+  }
+
   async animateDamage(damage: number, color: number = TINT_YELLOW, shouldShake = true) {
     const startWidth = this.bar1.width;
     this.setHealth(this.currentHealth - damage);
@@ -1305,6 +1416,7 @@ class StockCount {
 
 class IntroState extends State {
   async handleEntered(scene: BattleScene) {
+    scene.hideBattleSphereWindow();
     scene.soundBattleMusicAll.play();
     await scene.scene.get<LoadingScene>('loading').countdown();
 
@@ -1342,6 +1454,8 @@ class IntroState extends State {
 
 class StartActionChoiceState extends State {
   async handleEntered(scene: BattleScene) {
+    scene.hideBattleSphereWindow();
+
     const fadeTweens = [scene.enemySkelly.animateFaded(true)];
     for (const character of scene.activeCharacters.slice(1)) {
       fadeTweens.push(scene.party[character].animateFaded(true));
@@ -1486,7 +1600,8 @@ class ActionChoiceState extends State {
       if (this.characterIndex < scene.activeCharacters.length - 1) {
         this.transition('actionChoice', this.characterIndex + 1);
       } else {
-        this.transition('startMovePhase');
+        // this.transition('startMovePhase');
+        this.transition('quizPhase');
       }
     });
   }
@@ -1521,8 +1636,187 @@ class ActionChoiceState extends State {
   }
 }
 
+class QuizPhaseState extends State {
+  scene!: BattleScene;
+  questions: { question: string; choices: string[]; answer: string }[] = [
+    {
+      question: '2 + 2 = ?',
+      choices: ['3', '4', '5'],
+      answer: '4',
+    },
+    {
+      question: 'What is the layer of Scroll?',
+      choices: ['L1', 'L2', 'L3'],
+      answer: 'L2',
+    },
+    // 他のクイズの問題と選択肢を追加
+  ];
+  currentQuestionIndex = 0;
+  dialog!: Dialog;
+  choiceCards!: ChoiceCard[];
+
+  init(scene: BattleScene) {
+    this.scene = scene;
+    this.dialog = new Dialog(scene, scene.battleBorder.x, scene.battleBorder.y, {
+      width: 180,
+      height: 80,
+    }).setDepth(DEPTH_MODAL);
+    this.dialog.setVisible(false);
+  }
+
+  handleEntered(scene: BattleScene) {
+    if (scene.firstRound) {
+      scene.dialog.animateScript(['\n - Press Select Answer']);
+    }
+    this.dialog.setVisible(true);
+    this.showQuestion();
+  }
+
+  showQuestion() {
+    const currentQuestion = this.questions[this.currentQuestionIndex];
+    this.dialog.setText(currentQuestion.question);
+
+    const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
+    const buttonSpacing = 90;
+    const buttonY = dialogBottomCenter.y + 20;
+
+    this.choiceCards = currentQuestion.choices.map((choice, index) => {
+      const buttonX = dialogBottomCenter.x + (index - 1) * buttonSpacing;
+      const card: any = new ChoiceCard(this.scene, buttonX, buttonY, choice, () =>
+        this.handleChoiceClick(choice === currentQuestion.answer, card, this.scene.activeCharacters[index])
+      );
+      return card;
+    });
+
+    this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questions.length;
+  }
+
+  async handleChoiceClick(isCorrect: boolean, selectedCard: ChoiceCard, character: Characters) {
+    for (const card of this.choiceCards) {
+      if (card !== selectedCard) {
+        card.destroy();
+      }
+    }
+
+    await selectedCard.animateSelect();
+
+    await wait(this.scene, 400);
+
+    await selectedCard.animateResult(isCorrect);
+
+    await wait(this.scene, 400);
+
+    selectedCard.destroy();
+
+    if (isCorrect) {
+      this.transition('startMovePhase');
+    } else {
+      await this.animateIncorrect();
+      console.log(`Incorrect! ${character} is hurt!`);
+
+      // // キャラクターにダメージを与える処理を追加
+      // const damage = 10;
+      // this.scene.battleState.partyMemberStatuses[character].hp -= damage;
+      // this.scene.partyHealth[character].setHealth(
+      //   this.scene.battleState.partyMemberStatuses[character].hp,
+      //   this.scene.battleState.partyMemberStatuses[character].maxHp
+      // );
+
+      // await this.scene.party[character].animateHurt();
+      this.transition('startMovePhase');
+    }
+  }
+
+  async animateIncorrect() {
+    const originalScale = this.dialog.box.scale;
+    const originalTextPosition = { x: this.dialog.text.x, y: this.dialog.text.y };
+
+    await Promise.all([
+      asyncTween(this.scene, {
+        targets: [this.dialog.box],
+        scale: originalScale * 1.1,
+        duration: 200,
+        yoyo: true,
+        repeat: 1,
+        ease: Phaser.Math.Easing.Sine.InOut,
+      }),
+      asyncTween(this.scene, {
+        targets: [this.dialog.text],
+        x: originalTextPosition.x + 5,
+        y: originalTextPosition.y + 5,
+        duration: 100,
+        yoyo: true,
+        repeat: 1,
+        ease: Phaser.Math.Easing.Sine.InOut,
+      }),
+    ]);
+  }
+
+  handleExited() {
+    this.dialog.setVisible(false);
+  }
+}
+
+class ChoiceCard {
+  scene: BaseScene;
+  box: Phaser.GameObjects.Rectangle;
+  text: Phaser.GameObjects.BitmapText;
+
+  constructor(scene: BaseScene, x: number, y: number, text: string, onClick: () => void) {
+    this.scene = scene;
+    const color = TINT_CREAM;
+
+    this.box = scene.add
+      .rectangle(x, y - 5, 60, 20, color)
+      .setOrigin(0.5)
+      .setDepth(DEPTH_MODAL)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', onClick);
+
+    this.text = scene.add.bitmapText(x, y, 'sodapop', text).setOrigin(0.5).setTint(TINT_BLUE).setDepth(DEPTH_MODAL);
+  }
+
+  disableInteractive() {
+    this.box.disableInteractive();
+  }
+
+  async animateSelect() {
+    await Promise.all([
+      asyncTween(this.scene, {
+        targets: [this.box],
+        scale: 1.1,
+        duration: 200,
+        ease: Phaser.Math.Easing.Bounce.Out,
+      }),
+      asyncTween(this.scene, {
+        targets: [this.text],
+        scale: 1.1,
+        duration: 200,
+        ease: Phaser.Math.Easing.Bounce.Out,
+      }),
+    ]);
+  }
+
+  async animateResult(isCorrect: boolean) {
+    const targetColor = isCorrect ? TINT_GREEN : TINT_RED;
+
+    await asyncTween(this.scene, {
+      targets: [this.box],
+      fillColor: targetColor,
+      duration: 500,
+    });
+  }
+
+  destroy() {
+    this.box.destroy();
+    this.text.destroy();
+  }
+}
+
 class StartMovePhaseState extends State {
   async handleEntered(scene: BattleScene) {
+    scene.showBattleSphereWindow();
+
     scene.tweens.add({
       targets: [scene.battleSphereWindowOverlay],
       alpha: ALPHA_UNFADED,
@@ -1784,6 +2078,9 @@ class SolveState extends State {
 
     // Group matches by type
     const matchGroups = groups.filter((group) => group.length >= 3);
+    scene.spheresClearedCount += matchGroups.flat().length;
+    scene.scoreText.setText(`Score: ${scene.spheresClearedCount.toString()}`);
+
     const matchedByType: Map<SphereType, Sphere[]> = new Map();
     for (const type of SPHERE_TYPES) {
       const spheres = matchGroups.filter((group) => group[0].type === type).flat();
@@ -1872,12 +2169,40 @@ interface DamageAnimation {
 
 const DamageAnimations: { [key: string]: DamageAnimation } = {
   TO_ENEMY: {
-    damage: [{ x: -15, y: 5 }, { x: -8, y: -3 }, { x: -6, y: 5 }, { x: -3, y: -2 }, { x: -1, y: 1 }, {}],
-    highlight: [{ x: -14, y: 6 }, { x: -6, y: -1 }, { x: -4, y: 5 }, { x: -1, y: 1 }, { x: 1, y: 2 }, {}],
+    damage: [
+      { x: -15, y: 5 },
+      { x: -8, y: -3 },
+      { x: -6, y: 5 },
+      { x: -3, y: -2 },
+      { x: -1, y: 1 },
+      { x: 0, y: 0 },
+    ],
+    highlight: [
+      { x: -14, y: 6 },
+      { x: -6, y: -1 },
+      { x: -4, y: 5 },
+      { x: -1, y: 1 },
+      { x: 1, y: 2 },
+      { x: 0, y: 0 },
+    ],
   },
   TO_PARTY: {
-    damage: [{ x: -1, y: -3 }, { x: 2, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 0 }, { x: 0, y: -1 }, {}],
-    highlight: [{ x: 3, y: 0 }, { x: 1, y: -2 }, {}, { x: 0, y: -1 }, { x: 0, y: -1 }, {}],
+    damage: [
+      { x: -1, y: -3 },
+      { x: 2, y: 0 },
+      { x: 0, y: -1 },
+      { x: 0, y: 0 },
+      { x: 0, y: -1 },
+      { x: 0, y: 0 },
+    ],
+    highlight: [
+      { x: 3, y: 0 },
+      { x: 1, y: -2 },
+      { x: 0, y: 0 },
+      { x: 0, y: -1 },
+      { x: 0, y: -1 },
+      { x: 0, y: 0 },
+    ],
   },
 };
 
@@ -1954,6 +2279,7 @@ class DamageNumber {
 
 class TurnResultPhaseState extends State {
   async handleEntered(scene: BattleScene) {
+    scene.hideBattleSphereWindow();
     const hideAnimations = [
       asyncTween(scene, {
         targets: [scene.battleSphereWindowOverlay],
@@ -2036,55 +2362,121 @@ class TurnResultPhaseState extends State {
     }
 
     if (enemyActionResult) {
-      const { target, damage, death } = enemyActionResult;
-      if (partyAttacked) {
-        await scene.dialog.animateScript('-The <red>Enemy</red> strikes\n  back!');
-      } else {
-        await scene.dialog.animateScript('-The <red>Enemy</red> attacks!');
-      }
+      if (enemyActionResult.targets) {
+        // 全体攻撃の場合
+        const { targets, damages, deaths } = enemyActionResult;
+        if (partyAttacked) {
+          await scene.dialog.animateScript('-The <red>Enemy</red> unleashes\n  a devastating attack!');
+        } else {
+          await scene.dialog.animateScript('-The <red>Enemy</red> unleashes\n  a devastating attack!');
+        }
 
-      const targetMember = scene.party[target];
-      const enemyDamageNumber = new DamageNumber(
-        scene,
-        damage,
-        CHARACTER_COLORS[target],
-        targetMember.sprite.x + 16,
-        targetMember.sprite.y + 8
-      );
-      const enemyAttackAnimations: Promise<void>[] = [
-        scene.enemySkelly.animateAttack(() => {
-          const targetMember = scene.party[target];
-          const hurtAnimation = targetMember.animateHurt().then(async () => {
-            if (death) {
-              scene.soundPartyDeath.play();
-              scene.battleMusicDeath(target);
-              targetMember.setFaded(true);
-              await targetMember.animateDeath();
+        const enemyAttackAnimations: Promise<void>[] = [
+          scene.enemySkelly.animateAttack(async () => {
+            const damageNumbers: DamageNumber[] = [];
+            const deathAnimations: Promise<void>[] = [];
+            for (let i = 0; i < targets.length; i++) {
+              const target = targets[i];
+              const damage = damages?.[i] || 0;
+              const death = deaths?.[i];
+              const targetMember = scene.party[target];
+              const enemyDamageNumber = new DamageNumber(
+                scene,
+                damage,
+                CHARACTER_COLORS[target],
+                targetMember.sprite.x + 16,
+                targetMember.sprite.y + 8
+              );
+              damageNumbers.push(enemyDamageNumber);
+
+              const hurtAnimation = targetMember.animateHurt().then(async () => {
+                if (death) {
+                  scene.soundPartyDeath.play();
+                  scene.battleMusicDeath(target);
+                  targetMember.setFaded(true);
+                  deathAnimations.push(targetMember.animateDeath());
+                }
+              });
+
+              enemyAttackAnimations.push(
+                shake(scene, [scene.dialog.box], ShakeAxis.Y, [2, -1, 0], 50),
+                shake(scene, [scene.dialog.text], ShakeAxis.Y, [0, 2, -1, 0], 50),
+                scene.partyHealth[target].animateDamage(damage),
+                hurtAnimation,
+                enemyDamageNumber.animateAppear(DamageAnimations.TO_PARTY)
+              );
+
+              await wait(scene, 200);
             }
-          });
+
+            await Promise.all(deathAnimations);
+
+            await wait(scene, 400);
+            await Promise.all(damageNumbers.map((damageNumber) => damageNumber.animateDestroy()));
+          }),
+        ];
+
+        for (const target of targets) {
+          const targetMember = scene.party[target];
           enemyAttackAnimations.push(
-            shake(scene, [scene.dialog.box], ShakeAxis.Y, [2, -1, 0], 50),
-            shake(scene, [scene.dialog.text], ShakeAxis.Y, [0, 2, -1, 0], 50),
-            scene.partyHealth[target].animateDamage(damage),
-            hurtAnimation,
-            enemyDamageNumber.animateAppear(DamageAnimations.TO_PARTY)
+            scene.enemySkelly.animateAttackEffect(targetMember.sprite.x, targetMember.sprite.y)
           );
+        }
 
-          if (partyActionResults[target]?.battleAction === BattleActions.Defend) {
-            const sphereType = CHARACTER_SPHERE_TYPES[target];
+        scene.soundEnemyAttack.play();
+
+        await Promise.all(enemyAttackAnimations);
+      } else {
+        // 単体攻撃の場合（元の処理）
+        const { target, damage, death } = enemyActionResult;
+        if (partyAttacked) {
+          await scene.dialog.animateScript('-The <red>Enemy</red> strikes\n  back!');
+        } else {
+          await scene.dialog.animateScript('-The <red>Enemy</red> attacks!');
+        }
+
+        const targetMember = scene.party[target!];
+        const enemyDamageNumber = new DamageNumber(
+          scene,
+          damage ? damage : 0,
+          CHARACTER_COLORS[target!],
+          targetMember.sprite.x + 16,
+          targetMember.sprite.y + 8
+        );
+        const enemyAttackAnimations: Promise<void>[] = [
+          scene.enemySkelly.animateAttack(() => {
+            const hurtAnimation = targetMember.animateHurt().then(async () => {
+              if (death) {
+                scene.soundPartyDeath.play();
+                scene.battleMusicDeath(target!);
+                targetMember.setFaded(true);
+                await targetMember.animateDeath();
+              }
+            });
             enemyAttackAnimations.push(
-              scene.stockCounts[sphereType].animateSetCount(stockCounts[sphereType]),
-              scene.stockCounts[SphereType.Yellow].animateSetCount(stockCounts[SphereType.Yellow])
+              shake(scene, [scene.dialog.box], ShakeAxis.Y, [2, -1, 0], 50),
+              shake(scene, [scene.dialog.text], ShakeAxis.Y, [0, 2, -1, 0], 50),
+              scene.partyHealth[target!].animateDamage(damage ? damage : 0),
+              hurtAnimation,
+              enemyDamageNumber.animateAppear(DamageAnimations.TO_PARTY)
             );
-          }
-        }),
-        scene.enemySkelly.animateAttackEffect(targetMember.sprite.x, targetMember.sprite.y),
-      ];
-      scene.soundEnemyAttack.play();
 
-      await Promise.all(enemyAttackAnimations);
-      await wait(scene, 400);
-      await enemyDamageNumber.animateDestroy();
+            if (partyActionResults[target!]?.battleAction === BattleActions.Defend) {
+              const sphereType = CHARACTER_SPHERE_TYPES[target!];
+              enemyAttackAnimations.push(
+                scene.stockCounts[sphereType].animateSetCount(stockCounts[sphereType]),
+                scene.stockCounts[SphereType.Yellow].animateSetCount(stockCounts[SphereType.Yellow])
+              );
+            }
+          }),
+          scene.enemySkelly.animateAttackEffect(targetMember.sprite.x, targetMember.sprite.y),
+        ];
+        scene.soundEnemyAttack.play();
+
+        await Promise.all(enemyAttackAnimations);
+        await wait(scene, 400);
+        await enemyDamageNumber.animateDestroy();
+      }
     }
 
     scene.dialog.setText('');
@@ -2168,6 +2560,7 @@ class EndState extends State {
   music: Phaser.Sound.BaseSound;
   endCards!: EndCard[];
   analyticsEndType: string;
+  walletClient: any;
 
   static preload(scene: BaseScene) {
     scene.load.image('portraitOsmose', 'ui/osmose.png');
@@ -2181,6 +2574,8 @@ class EndState extends State {
     this.music = music;
     this.analyticsEndType = analyticsEndType;
   }
+
+  mintButton!: Phaser.GameObjects.Sprite;
 
   init(scene: BattleScene) {
     this.fadeRect = scene.add
@@ -2253,9 +2648,57 @@ class EndState extends State {
     });
 
     this.dialog.animateAppear();
+
+    const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+    const userAddress = accounts[0];
+    const SCROLL_RPC_URL = import.meta.env.VITE_SCROLL_RPC_URL;
+    this.walletClient = createWalletClient({
+      chain: scroll,
+      transport: http(SCROLL_RPC_URL),
+      account: userAddress,
+    });
+
+    const score = scene.spheresClearedCount;
+    this.mintButton = scene.add.sprite(0, 0, 'mintButton').setInteractive({ useHandCursor: true });
+    Align.In.Center(this.mintButton, this.dialog.box);
+    this.mintButton.on('pointerdown', () => this.handleMintButtonClick(userAddress, score), this);
+
     for (const endCard of this.endCards) {
       await wait(scene, 300);
       endCard.animateAppear();
     }
+  }
+
+  async handleMintButtonClick(address: Hex, score: number) {
+    const mintData = {
+      to: address,
+      score,
+    };
+    console.log('Minting NFT:', mintData);
+    const signature = await signMintData(mintData);
+
+    const receipt = await this.walletClient.writeContract({
+      address: SPHERE_QUIZ_NFT_ADDRESS,
+      abi: [
+        {
+          name: 'mint',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: [
+            { name: 'to', type: 'address' },
+            { name: 'score', type: 'uint256' },
+            { name: 'sig', type: 'bytes' },
+          ],
+          outputs: [],
+        },
+      ],
+      functionName: 'mint',
+      args: [mintData.to, BigInt(mintData.score), signature],
+      value: parseEther('0.00001'),
+      chain: scroll,
+      account: address,
+    });
+
+    console.log('NFT minted:', receipt);
   }
 }
