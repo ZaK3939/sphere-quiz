@@ -46,7 +46,7 @@ contract SphereQuizGameNFT is Ownable, ERC1155Supply, EIP712 {
     mapping(address player => ScoreData) public scoreData;
     uint256 public mintFee; 
     /// @notice EIP-712 typehash for `Mint` message
-    bytes32 public constant MINT_TYPEHASH = keccak256("Mint(address to,address player,uint256 score)");
+    bytes32 public constant MINT_TYPEHASH = keccak256("Mint(address to,uint256 score)");
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -58,9 +58,9 @@ contract SphereQuizGameNFT is Ownable, ERC1155Supply, EIP712 {
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address ownerAddress_) ERC1155("") {
+    constructor(address ownerAddress_,address signer_) ERC1155("") {
         _initializeOwner(ownerAddress_);
-        signer = ownerAddress_;
+        signer = signer_;
         protocolFeeDestination = ownerAddress_;
         // Update this with your own NFT collection's metadata
         baseURI = "https://www.arweave.net/";
@@ -84,7 +84,7 @@ contract SphereQuizGameNFT is Ownable, ERC1155Supply, EIP712 {
         if (!_verifySignature(to, score, sig)) {
             revert InvalidSignature();
         }
-        if(msg.value < mintFee){
+        if (msg.value < mintFee) {
             revert InvalidMintFee();
         }
 
@@ -168,7 +168,7 @@ contract SphereQuizGameNFT is Ownable, ERC1155Supply, EIP712 {
         view
         returns (bool)
     {
-        bytes32 digest = _hashTypedData(keccak256(abi.encode(MINT_TYPEHASH, to,  score)));
+        bytes32 digest = _hashTypedData(keccak256(abi.encode(MINT_TYPEHASH, to, score)));
         return SignatureCheckerLib.isValidSignatureNowCalldata(signer, digest, sig);
     }
 

@@ -25,7 +25,7 @@ contract SphereQuizGameNFTTest is Test {
     function setUp() public {
         (signer, signerPk) = makeAddrAndKey("signer");
         console2.log("signer", signer);
-        demo1155 = new SphereQuizGameNFT(signer);
+        demo1155 = new SphereQuizGameNFT(signer,signer);
     }
 
     function testFuzz_mint_validSig() public {

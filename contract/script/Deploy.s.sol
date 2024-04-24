@@ -20,6 +20,6 @@ contract Deploy is BaseScript {
 
     function run() public broadcast {
         
-        new SphereQuizGameNFT(owner);
+        new SphereQuizGameNFT(owner,broadcaster);
     }
 }

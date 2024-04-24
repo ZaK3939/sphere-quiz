@@ -31,7 +31,7 @@ import { Entries } from 'type-fest';
 import LoadingScene from 'gate/scenes/loading';
 import signMintData from 'gate/signMint';
 import { SPHERE_QUIZ_NFT_ADDRESS } from 'gate/config';
-import { Hex, createWalletClient, http, parseEther } from 'viem';
+import { createWalletClient, custom, encodeFunctionData, parseEther } from 'viem';
 import { scroll } from 'viem/chains';
 
 type Vector2 = Phaser.Math.Vector2;
@@ -486,7 +486,7 @@ export default class BattleScene extends BaseScene {
             [Characters.Blue]: { hp: 60, maxHp: 93, atk: 25 },
             [Characters.Midori]: { hp: 100, maxHp: 123, atk: 35 },
           },
-          { hp: 500, maxHp: 500 }
+          { hp: 1, maxHp: 500 }
         );
         break;
       case 'high':
@@ -1683,7 +1683,7 @@ class QuizPhaseState extends State {
     this.choiceCards = currentQuestion.choices.map((choice, index) => {
       const buttonX = dialogBottomCenter.x + (index - 1) * buttonSpacing;
       const card: any = new ChoiceCard(this.scene, buttonX, buttonY, choice, () =>
-        this.handleChoiceClick(choice === currentQuestion.answer, card, this.scene.activeCharacters[index])
+        this.handleChoiceClick(choice === currentQuestion.answer, card)
       );
       return card;
     });
@@ -1691,7 +1691,7 @@ class QuizPhaseState extends State {
     this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questions.length;
   }
 
-  async handleChoiceClick(isCorrect: boolean, selectedCard: ChoiceCard, character: Characters) {
+  async handleChoiceClick(isCorrect: boolean, selectedCard: ChoiceCard) {
     for (const card of this.choiceCards) {
       if (card !== selectedCard) {
         card.destroy();
@@ -1706,24 +1706,57 @@ class QuizPhaseState extends State {
 
     await wait(this.scene, 400);
 
+    const resultText = this.scene.add
+      .bitmapText(
+        this.scene.cameras.main.centerX,
+        this.scene.cameras.main.centerY,
+        'sodapop',
+        isCorrect ? 'Success' : 'Fail'
+      )
+      .setOrigin(0.5)
+      .setTint(isCorrect ? TINT_GREEN : TINT_RED)
+      .setDepth(DEPTH_MODAL)
+      .setAlpha(0)
+      .setScale(0);
+
+    await Promise.all([
+      asyncTween(this.scene, {
+        targets: [resultText],
+        alpha: 1,
+        scale: 1,
+        duration: 400,
+        ease: Phaser.Math.Easing.Back.Out,
+      }),
+      asyncTween(this.scene, {
+        targets: [resultText],
+        alpha: 0,
+        scale: 1.2,
+        delay: 600,
+        duration: 400,
+        ease: Phaser.Math.Easing.Cubic.In,
+      }),
+    ]);
+
+    resultText.destroy();
+
     selectedCard.destroy();
 
     if (isCorrect) {
       this.transition('startMovePhase');
     } else {
       await this.animateIncorrect();
-      console.log(`Incorrect! ${character} is hurt!`);
+      // change all character action to defence
+      for (const character of this.scene.activeCharacters) {
+        this.scene.currentTurnInputs[character] = BattleActions.Defend;
+        // close character action sprite
+        for (const [key, sprite] of Object.entries(this.scene.actionSprites[character])) {
+          sprite.play({ key: `battleActionDisappearUnselected[${key}]`, hideOnComplete: true });
+          sprite.disableInteractive();
+        }
+      }
 
-      // // キャラクターにダメージを与える処理を追加
-      // const damage = 10;
-      // this.scene.battleState.partyMemberStatuses[character].hp -= damage;
-      // this.scene.partyHealth[character].setHealth(
-      //   this.scene.battleState.partyMemberStatuses[character].hp,
-      //   this.scene.battleState.partyMemberStatuses[character].maxHp
-      // );
-
-      // await this.scene.party[character].animateHurt();
-      this.transition('startMovePhase');
+      // skip to Enemy's turn
+      this.transition('turnResult');
     }
   }
 
@@ -2551,7 +2584,54 @@ class EndCard {
     this.portrait.clearMask();
   }
 }
+class MintButton {
+  scene: BaseScene;
+  box: Phaser.GameObjects.Rectangle;
+  text: Phaser.GameObjects.BitmapText;
 
+  constructor(scene: BaseScene, x: number, y: number, onClick: () => void) {
+    this.scene = scene;
+
+    const width = 60;
+    const height = 20;
+    this.box = scene.add
+      .rectangle(x, y + 10, width, height, TINT_CREAM)
+      .setOrigin(0.5)
+      .setDepth(DEPTH_MODAL)
+      .setVisible(false)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', onClick);
+
+    this.text = scene.add
+      .bitmapText(x, y + 15, 'sodapop', ' Mint ')
+      .setOrigin(0.5)
+      .setTint(0x000000)
+      .setDepth(DEPTH_MODAL)
+      .setVisible(false);
+  }
+
+  async animateAppear() {
+    this.box.setVisible(true);
+    this.text.setVisible(true);
+
+    await Promise.all([
+      asyncTween(this.scene, {
+        targets: [this.box],
+        scale: 1.1,
+        duration: 400,
+        ease: Phaser.Math.Easing.Back.Out,
+        yoyo: true,
+      }),
+      asyncTween(this.scene, {
+        targets: [this.text],
+        scale: 1.1,
+        duration: 400,
+        ease: Phaser.Math.Easing.Back.Out,
+        yoyo: true,
+      }),
+    ]);
+  }
+}
 class EndState extends State {
   fadeRect!: Phaser.GameObjects.Rectangle;
   dialog!: Dialog;
@@ -2561,6 +2641,7 @@ class EndState extends State {
   endCards!: EndCard[];
   analyticsEndType: string;
   walletClient: any;
+  mintButton!: MintButton;
 
   static preload(scene: BaseScene) {
     scene.load.image('portraitOsmose', 'ui/osmose.png');
@@ -2573,9 +2654,15 @@ class EndState extends State {
     this.message = message;
     this.music = music;
     this.analyticsEndType = analyticsEndType;
+    try {
+      this.walletClient = createWalletClient({
+        chain: scroll,
+        transport: custom((window as any).ethereum),
+      });
+    } catch (error) {
+      console.error('Error initializing wallet client:', error);
+    }
   }
-
-  mintButton!: Phaser.GameObjects.Sprite;
 
   init(scene: BattleScene) {
     this.fadeRect = scene.add
@@ -2589,7 +2676,8 @@ class EndState extends State {
       )
       .setAlpha(0)
       .setDepth(DEPTH_MODAL);
-    this.dialog = new Dialog(scene, scene.battleBorder.x, scene.battleBorder.y)
+
+    this.dialog = new Dialog(scene, scene.battleBorder.x, scene.battleBorder.y - 20)
       .setText(this.message, true)
       .setVisible(false)
       .setDepth(DEPTH_MODAL);
@@ -2629,7 +2717,6 @@ class EndState extends State {
 
   async handleEntered(scene: BattleScene) {
     window.plausible(this.analyticsEndType);
-
     scene.dialog.setText('');
     await asyncTween(scene, {
       targets: [scene.soundBattleMusic],
@@ -2637,31 +2724,22 @@ class EndState extends State {
       duration: 100,
     });
     this.music.play();
-
     await Promise.all(scene.activeCharacters.map((character) => scene.party[character].animateVictory()));
     await wait(scene, 300);
-
     await asyncTween(scene, {
       targets: [this.fadeRect],
       alpha: 0.8,
       duration: 500,
     });
-
     this.dialog.animateAppear();
 
-    const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
-    const userAddress = accounts[0];
-    const SCROLL_RPC_URL = import.meta.env.VITE_SCROLL_RPC_URL;
-    this.walletClient = createWalletClient({
-      chain: scroll,
-      transport: http(SCROLL_RPC_URL),
-      account: userAddress,
-    });
-
     const score = scene.spheresClearedCount;
-    this.mintButton = scene.add.sprite(0, 0, 'mintButton').setInteractive({ useHandCursor: true });
-    Align.In.Center(this.mintButton, this.dialog.box);
-    this.mintButton.on('pointerdown', () => this.handleMintButtonClick(userAddress, score), this);
+
+    const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
+    this.mintButton = new MintButton(scene, dialogBottomCenter.x, dialogBottomCenter.y + 30, () =>
+      this.handleMintButtonClick(score)
+    );
+    await this.mintButton.animateAppear();
 
     for (const endCard of this.endCards) {
       await wait(scene, 300);
@@ -2669,36 +2747,51 @@ class EndState extends State {
     }
   }
 
-  async handleMintButtonClick(address: Hex, score: number) {
-    const mintData = {
-      to: address,
-      score,
-    };
-    console.log('Minting NFT:', mintData);
-    const signature = await signMintData(mintData);
+  async handleMintButtonClick(score: number) {
+    if (!this.walletClient) {
+      console.error('Wallet client not initialized');
+      return;
+    }
 
-    const receipt = await this.walletClient.writeContract({
-      address: SPHERE_QUIZ_NFT_ADDRESS,
-      abi: [
-        {
-          name: 'mint',
-          type: 'function',
-          stateMutability: 'payable',
-          inputs: [
-            { name: 'to', type: 'address' },
-            { name: 'score', type: 'uint256' },
-            { name: 'sig', type: 'bytes' },
+    try {
+      const [address] = await this.walletClient.getAddresses();
+
+      const mintData = {
+        to: address,
+        score,
+      };
+
+      const signature = await signMintData(mintData);
+
+      console.log(`Minting NFT (${SPHERE_QUIZ_NFT_ADDRESS}) for`, address, 'with score', score);
+
+      const tx = await this.walletClient.sendTransaction({
+        account: address,
+        chain: scroll,
+        to: SPHERE_QUIZ_NFT_ADDRESS,
+        data: encodeFunctionData({
+          abi: [
+            {
+              type: 'function',
+              name: 'mint',
+              inputs: [
+                { name: 'to', type: 'address', internalType: 'address' },
+                { name: 'score', type: 'uint256', internalType: 'uint256' },
+                { name: 'sig', type: 'bytes', internalType: 'bytes' },
+              ],
+              outputs: [],
+              stateMutability: 'payable',
+            },
           ],
-          outputs: [],
-        },
-      ],
-      functionName: 'mint',
-      args: [mintData.to, BigInt(mintData.score), signature],
-      value: parseEther('0.00001'),
-      chain: scroll,
-      account: address,
-    });
+          functionName: 'mint',
+          args: [address, BigInt(score), signature],
+        }),
+        value: parseEther('0.00001'),
+      });
 
-    console.log('NFT minted:', receipt);
+      console.log('NFT minted:', tx);
+    } catch (error) {
+      console.error('Error minting NFT:', error);
+    }
   }
 }
