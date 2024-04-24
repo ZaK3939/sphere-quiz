@@ -2710,7 +2710,7 @@ class EndState extends State {
         'portraitGithub',
         'Source\navailable\non Github',
         TINT_GREEN,
-        'https://github.com/Osmose/RBG'
+        'https://github.com/ZaK3939/sphere-quiz'
       ),
     ];
   }
