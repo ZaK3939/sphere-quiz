@@ -29,7 +29,7 @@ import Menu, { horizontalMenuItems } from 'gate/menu';
 import Dialog from 'gate/dialog';
 import { Entries } from 'type-fest';
 import LoadingScene from 'gate/scenes/loading';
-import signMintData from 'gate/signMint';
+import { signMintData } from 'gate/signMintData';
 import { SPHERE_QUIZ_NFT_ADDRESS } from 'gate/config';
 import {
   Address,
@@ -2838,12 +2838,7 @@ class EndState extends State {
     try {
       const [address] = await this.walletClient.getAddresses();
 
-      const mintData = {
-        to: address,
-        score,
-      };
-
-      const signature = await signMintData(mintData);
+      const signature = await signMintData(address, score);
 
       console.log(`Minting NFT (${SPHERE_QUIZ_NFT_ADDRESS}) for`, address, 'with score', score);
 
