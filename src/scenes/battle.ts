@@ -764,7 +764,7 @@ class Skelly {
   static create(scene: BattleScene) {
     scene.anims.create({
       key: 'enemySkellyIdle',
-      frameRate: 5,
+      frameRate: 3,
       frames: scene.anims.generateFrameNumbers('enemySkelly', { start: 0, end: 3 }),
       repeat: -1,
     });
