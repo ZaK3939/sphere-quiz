@@ -1,7 +1,7 @@
 import BaseScene from 'gate/scenes/base';
 import BattleScene from 'gate/scenes/battle';
 import { asyncAnimation, asyncLoad } from 'gate/util';
-import { createPublicClient, createWalletClient, http, formatUnits, parseEther, custom, Address } from 'viem';
+import { createPublicClient, createWalletClient, http, custom, Address } from 'viem';
 import { scroll } from 'viem/chains';
 
 export default class LoadingScene extends BaseScene {
@@ -74,7 +74,7 @@ export default class LoadingScene extends BaseScene {
 
     this.connectButton = this.add
       .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
-        fontSize: '24px',
+        fontSize: '20px',
         color: '#fff',
       })
       .setOrigin(0.5);
@@ -127,20 +127,7 @@ export default class LoadingScene extends BaseScene {
         this.loadingCount.disableInteractive(); // インタラクションを無効化
         await asyncAnimation(this.loadingCount, 'loadingStartToEmpty'); // ロード完了アニメーション
         if (this.walletClient) {
-          const balance = await this.publicClient.getBalance({ address: address });
-
-          const formattedBalance = formatUnits(balance, 18); // ETH に変換
-          console.log(`Account: ${address}, Balance: ${formattedBalance} ETH`);
-
-          const lowThreshold = parseEther('0.1');
-          const mediumThreshold = parseEther('0.5');
-          if (balance < lowThreshold) {
-            this.battleScene.setBattleState('low');
-          } else if (balance < mediumThreshold) {
-            this.battleScene.setBattleState('medium');
-          } else {
-            this.battleScene.setBattleState('high');
-          }
+          await this.battleScene.setBattleState(address); // バトルステートを設定
           this.scene.run('battle'); // バトルシーンを開始
         } else {
           console.error('Wallet client not initialized');

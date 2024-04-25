@@ -31,7 +31,16 @@ import { Entries } from 'type-fest';
 import LoadingScene from 'gate/scenes/loading';
 import signMintData from 'gate/signMint';
 import { SPHERE_QUIZ_NFT_ADDRESS } from 'gate/config';
-import { createWalletClient, custom, encodeFunctionData, parseEther } from 'viem';
+import {
+  Address,
+  createPublicClient,
+  createWalletClient,
+  http,
+  custom,
+  encodeFunctionData,
+  parseEther,
+  formatUnits,
+} from 'viem';
 import { scroll } from 'viem/chains';
 import { quizData } from 'gate/quiz-data';
 
@@ -85,6 +94,7 @@ const CHARACTER_SPHERE_TYPES = {
 
 export default class BattleScene extends BaseScene {
   stateMachine!: StateMachine;
+  publicClient: ReturnType<typeof createPublicClient>;
 
   // UI
   battleBorder!: Phaser.GameObjects.NineSlice;
@@ -154,6 +164,11 @@ export default class BattleScene extends BaseScene {
   constructor() {
     super({
       key: 'battle',
+    });
+    const SCROLL_RPC_URL = import.meta.env.VITE_SCROLL_RPC_URL;
+    this.publicClient = createPublicClient({
+      chain: scroll,
+      transport: http(SCROLL_RPC_URL),
     });
   }
 
@@ -473,49 +488,90 @@ export default class BattleScene extends BaseScene {
       this.partyHealth[character].setVisible(true);
     }
   }
-  setBattleState(state: 'low' | 'medium' | 'high') {
-    console.log('Setting battle state:', state);
-    switch (state) {
-      case 'low':
-        this.battleState = new BattleState(
-          {
-            [Characters.Rojo]: { hp: 50, maxHp: 101, atk: 70 },
-            [Characters.Blue]: { hp: 30, maxHp: 93, atk: 25 },
-            [Characters.Midori]: { hp: 70, maxHp: 123, atk: 35 },
-          },
-          { hp: 500, maxHp: 500 }
-        );
-        break;
-      case 'medium':
-        this.battleState = new BattleState(
-          {
-            [Characters.Rojo]: { hp: 80, maxHp: 101, atk: 70 },
-            [Characters.Blue]: { hp: 60, maxHp: 93, atk: 25 },
-            [Characters.Midori]: { hp: 100, maxHp: 123, atk: 35 },
-          },
-          { hp: 500, maxHp: 500 }
-        );
-        break;
-      case 'high':
-        this.battleState = new BattleState(
-          {
-            [Characters.Rojo]: { hp: 101, maxHp: 101, atk: 70 },
-            [Characters.Blue]: { hp: 93, maxHp: 93, atk: 25 },
-            [Characters.Midori]: { hp: 123, maxHp: 123, atk: 35 },
-          },
-          { hp: 500, maxHp: 500 }
-        );
-        break;
-      default:
-        this.battleState = new BattleState(
-          {
-            [Characters.Rojo]: { hp: 80, maxHp: 101, atk: 70 },
-            [Characters.Blue]: { hp: 60, maxHp: 93, atk: 25 },
-            [Characters.Midori]: { hp: 100, maxHp: 123, atk: 35 },
-          },
-          { hp: 500, maxHp: 500 }
-        );
-        break;
+  async setBattleState(address: Address) {
+    console.log('Setting battle state for address:', address);
+
+    // scrollscanのAPIエンドポイント
+    const apiUrl = `https://api.scrollscan.com/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${
+      import.meta.env.VITE_API_KEY_SCROLL
+    }`;
+    console.log('apiUrl', apiUrl);
+    // APIを呼び出して最新のトランザクション情報を取得
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    if (data.status === '1' && data.result.length > 0) {
+      const latestTransaction = data.result[data.result.length - 1];
+      console.log('latestTransaction', latestTransaction);
+      // 最新のトランザクションのガス代を取得
+      const latestTransactionGasPrice = BigInt(latestTransaction.gasPrice);
+
+      // 直近7日のトランザクション数を取得
+      const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
+      const transactionCountInLastWeek = data.result.filter((tx: any) => parseInt(tx.timeStamp) >= weekAgo).length;
+
+      // 最新のトランザクションのブロック番号と現在のブロック番号の近さを計算
+      const latestBlockNumber = await this.publicClient.getBlockNumber();
+      const latestTransactionBlockNumber = parseInt(latestTransaction.blockNumber);
+      const blockDiff = Number(latestBlockNumber) - latestTransactionBlockNumber;
+      // https://scrollscan.com/chart/blocktime
+      const daysAgo = Math.floor(blockDiff / 25000); // 1日あたり約25000ブロック（3秒ブロック時間を想定）
+
+      console.log('latestTransactionBlockNumber', latestTransactionBlockNumber, blockDiff);
+
+      // 攻撃力を計算 (元の数値+10を上限とする)
+      const latestTransactionGasPriceAttack = Math.max(
+        Math.min(parseFloat(formatUnits(latestTransactionGasPrice, 9)) * 50, 70),
+        15
+      );
+      const transactionCountAttack = Math.max(Math.min(transactionCountInLastWeek * 3, 45), 10);
+      const blockProximityAttack = Math.max(5, 55 - daysAgo * 10);
+
+      console.log(
+        'data',
+        parseFloat(formatUnits(latestTransactionGasPrice, 9)) * 50,
+        transactionCountInLastWeek,
+        blockProximityAttack
+      );
+      console.log('Attack Power: ', latestTransactionGasPriceAttack, transactionCountAttack, blockProximityAttack);
+      // HPを設定 (既存のコード)
+      const balance = await this.publicClient.getBalance({ address });
+      const lowThreshold = parseEther('0.1');
+      const mediumThreshold = parseEther('0.5');
+
+      console.log('balance', balance.toString());
+      let hpSettings;
+      if (balance < lowThreshold) {
+        hpSettings = {
+          [Characters.Rojo]: { hp: 50, maxHp: 101 },
+          [Characters.Blue]: { hp: 30, maxHp: 93 },
+          [Characters.Midori]: { hp: 70, maxHp: 123 },
+        };
+      } else if (balance < mediumThreshold) {
+        hpSettings = {
+          [Characters.Rojo]: { hp: 80, maxHp: 101 },
+          [Characters.Blue]: { hp: 60, maxHp: 93 },
+          [Characters.Midori]: { hp: 100, maxHp: 123 },
+        };
+      } else {
+        hpSettings = {
+          [Characters.Rojo]: { hp: 101, maxHp: 101 },
+          [Characters.Blue]: { hp: 93, maxHp: 93 },
+          [Characters.Midori]: { hp: 123, maxHp: 123 },
+        };
+      }
+
+      this.battleState = new BattleState(
+        {
+          ...hpSettings,
+          [Characters.Rojo]: { ...hpSettings[Characters.Rojo], atk: latestTransactionGasPriceAttack },
+          [Characters.Blue]: { ...hpSettings[Characters.Blue], atk: transactionCountAttack },
+          [Characters.Midori]: { ...hpSettings[Characters.Midori], atk: blockProximityAttack },
+        },
+        { hp: 700, maxHp: 700 }
+      );
+    } else {
+      console.log('No transactions found for the specified address');
     }
   }
 }

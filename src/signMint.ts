@@ -3,7 +3,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { scroll } from 'viem/chains';
 import { SPHERE_QUIZ_NFT_ADDRESS } from './config';
 
-const SIGNER_PRIVATE_KEY = (import.meta.env.VITE_SIGNER_PRIVATE_KEY ?? '0x00') as Hex;
+const SIGNER_PRIVATE_KEY = (process.env.SIGNER_PRIVATE_KEY ?? '0x00') as Hex;
 const account = privateKeyToAccount(SIGNER_PRIVATE_KEY);
 
 const domain = {
