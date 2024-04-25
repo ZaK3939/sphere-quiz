@@ -33,6 +33,7 @@ import signMintData from 'gate/signMint';
 import { SPHERE_QUIZ_NFT_ADDRESS } from 'gate/config';
 import { createWalletClient, custom, encodeFunctionData, parseEther } from 'viem';
 import { scroll } from 'viem/chains';
+import { quizData } from 'gate/quiz-data';
 
 type Vector2 = Phaser.Math.Vector2;
 
@@ -122,6 +123,7 @@ export default class BattleScene extends BaseScene {
   soundPartyAttack!: { [key in Characters]: Phaser.Sound.BaseSound };
   soundEnemyAttack!: Phaser.Sound.BaseSound;
   soundPartyDeath!: Phaser.Sound.BaseSound;
+  soundSuccess!: Phaser.Sound.BaseSound;
   soundGameOver!: Phaser.Sound.BaseSound;
   soundVictory!: Phaser.Sound.BaseSound;
   soundBattleMusicAll!: Phaser.Sound.BaseSound;
@@ -185,6 +187,7 @@ export default class BattleScene extends BaseScene {
     scene.load.audio('soundMidoriAttack', 'audio/midori_attack.mp3');
     scene.load.audio('soundEnemyAttack', 'audio/enemy_attack.mp3');
     scene.load.audio('soundPartyDeath', 'audio/player_death.mp3');
+    scene.load.audio('soundSuccess', 'audio/success.mp3');
     scene.load.audio('soundGameOver', 'audio/gameover.mp3');
     scene.load.audio('soundVictory', 'audio/victory.mp3');
     scene.load.audio('soundEnemyDeath', 'audio/enemy_death.mp3');
@@ -247,11 +250,11 @@ export default class BattleScene extends BaseScene {
       .setDepth(DEPTH_BACKGROUND);
     this.battleSphereWindow = this.add.image(0, 0, 'battleSphereWindow').setDepth(DEPTH_UI);
     this.battleSphereStock = this.add.image(0, 0, 'battleSphereStock').setDepth(DEPTH_UI);
-    this.byline = this.add.image(0, 0, 'byline').setDepth(DEPTH_UI);
+    this.byline = this.add.image(0, 0, 'byline').setScale(0.25).setOrigin(1, 0).setDepth(DEPTH_UI);
 
     Align.In.TopLeft(this.battleSphereWindow, this.battleBorder, -30, -7);
     Align.To.BottomCenter(this.battleSphereStock, this.battleSphereWindow, -4, 8);
-    Align.In.TopRight(this.byline, this.battleBorder, -3, -2);
+    Align.In.TopRight(this.byline, this.battleBorder, -5, -4);
 
     this.battleSphereWindowOverlay = this.add
       .rectangle(
@@ -283,6 +286,7 @@ export default class BattleScene extends BaseScene {
     };
     this.soundEnemyAttack = this.sound.add('soundEnemyAttack');
     this.soundPartyDeath = this.sound.add('soundPartyDeath');
+    this.soundSuccess = this.sound.add('soundSuccess');
     this.soundGameOver = this.sound.add('soundGameOver', { loop: true });
     this.soundVictory = this.sound.add('soundVictory', { loop: true });
     this.soundEnemyDeath = this.sound.add('soundEnemyDeath');
@@ -1638,28 +1642,19 @@ class ActionChoiceState extends State {
 
 class QuizPhaseState extends State {
   scene!: BattleScene;
-  questions: { question: string; choices: string[]; answer: string }[] = [
-    {
-      question: '2 + 2 = ?',
-      choices: ['3', '4', '5'],
-      answer: '4',
-    },
-    {
-      question: 'What is the layer of Scroll?',
-      choices: ['L1', 'L2', 'L3'],
-      answer: 'L2',
-    },
-    // 他のクイズの問題と選択肢を追加
-  ];
+  questions: typeof quizData = [];
+  remainingQuestions: typeof quizData = [];
+
   currentQuestionIndex = 0;
   dialog!: Dialog;
   choiceCards!: ChoiceCard[];
 
   init(scene: BattleScene) {
     this.scene = scene;
-    this.dialog = new Dialog(scene, scene.battleBorder.x, scene.battleBorder.y, {
-      width: 180,
-      height: 80,
+    this.loadQuizData();
+    this.dialog = new Dialog(scene, scene.battleBorder.x, scene.battleBorder.y - 10, {
+      width: 240,
+      height: 90,
     }).setDepth(DEPTH_MODAL);
     this.dialog.setVisible(false);
   }
@@ -1672,9 +1667,30 @@ class QuizPhaseState extends State {
     this.showQuestion();
   }
 
+  shuffleQuestions() {
+    this.remainingQuestions = [...this.questions];
+    for (let i = this.remainingQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.remainingQuestions[i], this.remainingQuestions[j]] = [
+        this.remainingQuestions[j],
+        this.remainingQuestions[i],
+      ];
+    }
+  }
+
+  loadQuizData() {
+    this.questions = quizData;
+    this.shuffleQuestions();
+  }
+
   showQuestion() {
-    const currentQuestion = this.questions[this.currentQuestionIndex];
-    this.dialog.setText(currentQuestion.question);
+    if (this.remainingQuestions.length === 0) {
+      this.shuffleQuestions();
+    }
+    const currentQuestion = this.remainingQuestions.shift()!;
+    const questionText = `${currentQuestion.question}\n\n`;
+    const choiceText = currentQuestion.choices.map((choice, index) => `${index + 1}. ${choice}`).join('\n');
+    this.dialog.setText(questionText + choiceText);
 
     const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
     const buttonSpacing = 90;
@@ -1682,13 +1698,11 @@ class QuizPhaseState extends State {
 
     this.choiceCards = currentQuestion.choices.map((choice, index) => {
       const buttonX = dialogBottomCenter.x + (index - 1) * buttonSpacing;
-      const card: any = new ChoiceCard(this.scene, buttonX, buttonY, choice, () =>
+      const card: any = new ChoiceCard(this.scene, buttonX, buttonY, index + 1, () =>
         this.handleChoiceClick(choice === currentQuestion.answer, card)
       );
       return card;
     });
-
-    this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questions.length;
   }
 
   async handleChoiceClick(isCorrect: boolean, selectedCard: ChoiceCard) {
@@ -1702,6 +1716,12 @@ class QuizPhaseState extends State {
 
     await wait(this.scene, 400);
 
+    // play success or fail Sound
+    if (isCorrect) {
+      this.scene.soundSuccess.play();
+    } else {
+      // this.scene.soundFail.play();
+    }
     await selectedCard.animateResult(isCorrect);
 
     await wait(this.scene, 400);
@@ -1795,7 +1815,7 @@ class ChoiceCard {
   box: Phaser.GameObjects.Rectangle;
   text: Phaser.GameObjects.BitmapText;
 
-  constructor(scene: BaseScene, x: number, y: number, text: string, onClick: () => void) {
+  constructor(scene: BaseScene, x: number, y: number, choice: number, onClick: () => void) {
     this.scene = scene;
     const color = TINT_CREAM;
 
@@ -1806,7 +1826,11 @@ class ChoiceCard {
       .setInteractive({ useHandCursor: true })
       .on('pointerdown', onClick);
 
-    this.text = scene.add.bitmapText(x, y, 'sodapop', text).setOrigin(0.5).setTint(TINT_BLUE).setDepth(DEPTH_MODAL);
+    this.text = scene.add
+      .bitmapText(x, y, 'sodapop', choice.toString())
+      .setOrigin(0.5)
+      .setTint(TINT_BLUE)
+      .setDepth(DEPTH_MODAL);
   }
 
   disableInteractive() {
@@ -2645,7 +2669,7 @@ class EndState extends State {
 
   static preload(scene: BaseScene) {
     scene.load.image('portraitOsmose', 'ui/osmose.png');
-    scene.load.image('portraitGatekid', 'ui/gatekid.png');
+    scene.load.image('portraitZak', 'ui/zak3939.png');
     scene.load.image('portraitGithub', 'ui/github.png');
   }
 
@@ -2689,10 +2713,10 @@ class EndState extends State {
         scene,
         bottomLeft.x + 57,
         bottomLeft.y - 26,
-        'portraitGatekid',
-        'Gatekid3\nArt/Music\nConcept',
+        'portraitZak',
+        'Zak3939\nGame\nCreator',
         TINT_RED,
-        'https://ko-fi.com/gatekid3'
+        'https://twitter.com/ZacK_3939'
       ),
       new EndCard(
         scene,

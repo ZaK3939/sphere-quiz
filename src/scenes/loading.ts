@@ -8,10 +8,11 @@ export default class LoadingScene extends BaseScene {
   loadingCount!: Phaser.GameObjects.Sprite;
   publicClient: ReturnType<typeof createPublicClient>;
   walletClient: ReturnType<typeof createWalletClient>;
-  walletConnected: boolean = false; // ウォレット接続状態
-  resourcesLoaded: boolean = false; // リソースロード完了状態
+  walletConnected: boolean = false;
+  resourcesLoaded: boolean = false;
   connectButton!: Phaser.GameObjects.Text;
   battleScene!: BattleScene;
+  titleText!: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super({
@@ -32,6 +33,7 @@ export default class LoadingScene extends BaseScene {
 
   preload() {
     this.load.spritesheet('loadingCount', 'ui/loading_count.png', { frameWidth: 20, frameHeight: 20 });
+    this.load.bitmapFont('pixelFont', 'path/to/pixel/font.png', 'path/to/pixel/font.xml');
   }
 
   create() {
@@ -79,6 +81,12 @@ export default class LoadingScene extends BaseScene {
 
     this.connectButton.setInteractive({ useHandCursor: true });
     this.connectButton.on('pointerdown', this.onConnect);
+
+    this.titleText = this.add
+      .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY - 50, 'pixelFont', 'SPHERE QUIZ', 32)
+      .setOrigin(0.5)
+      .setTint(0xffffff)
+      .setLetterSpacing(2);
 
     // リソースロード処理
     this.battleScene = this.scene.get('battle') as BattleScene;

@@ -1,7 +1,7 @@
 import path from 'path';
 
 export default {
-  base: '.',
+  base: './',
   resolve: {
     alias: {
       gate: path.resolve(__dirname, 'src'),
