@@ -124,6 +124,7 @@ export default class BattleScene extends BaseScene {
   soundEnemyAttack!: Phaser.Sound.BaseSound;
   soundPartyDeath!: Phaser.Sound.BaseSound;
   soundSuccess!: Phaser.Sound.BaseSound;
+  soundFail!: Phaser.Sound.BaseSound;
   soundGameOver!: Phaser.Sound.BaseSound;
   soundVictory!: Phaser.Sound.BaseSound;
   soundBattleMusicAll!: Phaser.Sound.BaseSound;
@@ -188,6 +189,7 @@ export default class BattleScene extends BaseScene {
     scene.load.audio('soundEnemyAttack', 'audio/enemy_attack.mp3');
     scene.load.audio('soundPartyDeath', 'audio/player_death.mp3');
     scene.load.audio('soundSuccess', 'audio/success.mp3');
+    scene.load.audio('soundFail', 'audio/fail.mp3');
     scene.load.audio('soundGameOver', 'audio/gameover.mp3');
     scene.load.audio('soundVictory', 'audio/victory.mp3');
     scene.load.audio('soundEnemyDeath', 'audio/enemy_death.mp3');
@@ -287,6 +289,7 @@ export default class BattleScene extends BaseScene {
     this.soundEnemyAttack = this.sound.add('soundEnemyAttack');
     this.soundPartyDeath = this.sound.add('soundPartyDeath');
     this.soundSuccess = this.sound.add('soundSuccess');
+    this.soundFail = this.sound.add('soundFail');
     this.soundGameOver = this.sound.add('soundGameOver', { loop: true });
     this.soundVictory = this.sound.add('soundVictory', { loop: true });
     this.soundEnemyDeath = this.sound.add('soundEnemyDeath');
@@ -1720,7 +1723,7 @@ class QuizPhaseState extends State {
     if (isCorrect) {
       this.scene.soundSuccess.play();
     } else {
-      // this.scene.soundFail.play();
+      this.scene.soundFail.play();
     }
     await selectedCard.animateResult(isCorrect);
 
@@ -2659,7 +2662,6 @@ class MintButton {
 class EndState extends State {
   fadeRect!: Phaser.GameObjects.Rectangle;
   dialog!: Dialog;
-  osmoseDialog!: Dialog;
   message: string;
   music: Phaser.Sound.BaseSound;
   endCards!: EndCard[];
@@ -2668,7 +2670,7 @@ class EndState extends State {
   mintButton!: MintButton;
 
   static preload(scene: BaseScene) {
-    scene.load.image('portraitOsmose', 'ui/osmose.png');
+    scene.load.image('portraitPhi', 'ui/phi.png');
     scene.load.image('portraitZak', 'ui/zak3939.png');
     scene.load.image('portraitGithub', 'ui/github.png');
   }
@@ -2722,10 +2724,10 @@ class EndState extends State {
         scene,
         bottomLeft.x + 164,
         bottomLeft.y - 26,
-        'portraitOsmose',
-        'Osmose\nCoding\nMisc',
+        'portraitPhi',
+        'Phi\nProtocol\nGames',
         TINT_BLUE,
-        'https://www.mkelly.me/'
+        'https://phiprotocol.xyz/'
       ),
       new EndCard(
         scene,

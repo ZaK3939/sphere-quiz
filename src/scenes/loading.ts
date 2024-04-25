@@ -33,7 +33,7 @@ export default class LoadingScene extends BaseScene {
 
   preload() {
     this.load.spritesheet('loadingCount', 'ui/loading_count.png', { frameWidth: 20, frameHeight: 20 });
-    this.load.bitmapFont('pixelFont', 'path/to/pixel/font.png', 'path/to/pixel/font.xml');
+    this.load.bitmapFont('pixelFont', 'font/square_6x6.png', 'font/square_6x6.xml');
   }
 
   create() {
