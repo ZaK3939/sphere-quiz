@@ -14,6 +14,7 @@ window.addEventListener('load', () => {
     type: Phaser.AUTO,
     height: 202,
     width: 350,
+    pixelArt: true,
     scale: {
       mode: Phaser.Scale.FIT,
     },

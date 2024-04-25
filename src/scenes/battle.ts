@@ -160,6 +160,7 @@ export default class BattleScene extends BaseScene {
   firstRound = true;
 
   spheresClearedCount = 0;
+  clearedSpheresThisTurn = 0;
 
   constructor() {
     super({
@@ -340,7 +341,8 @@ export default class BattleScene extends BaseScene {
       borderTopRight.x - 39,
       borderTopRight.y + 20,
       this.battleState.enemyStatus.hp,
-      this.battleState.enemyStatus.maxHp
+      this.battleState.enemyStatus.maxHp,
+      0
     );
 
     const pStatus = this.battleState.partyMemberStatuses;
@@ -353,7 +355,8 @@ export default class BattleScene extends BaseScene {
         pBarX + 6,
         pBarY,
         pStatus[Characters.Rojo].hp,
-        pStatus[Characters.Rojo].maxHp
+        pStatus[Characters.Rojo].maxHp,
+        pStatus[Characters.Rojo].atk
       ),
       [Characters.Blue]: new HealthBar(
         this,
@@ -361,7 +364,8 @@ export default class BattleScene extends BaseScene {
         pBarX + 3,
         pBarY + 11,
         pStatus[Characters.Blue].hp,
-        pStatus[Characters.Blue].maxHp
+        pStatus[Characters.Blue].maxHp,
+        pStatus[Characters.Blue].atk
       ),
       [Characters.Midori]: new HealthBar(
         this,
@@ -369,7 +373,8 @@ export default class BattleScene extends BaseScene {
         pBarX,
         pBarY + 22,
         pStatus[Characters.Midori].hp,
-        pStatus[Characters.Midori].maxHp
+        pStatus[Characters.Midori].maxHp,
+        pStatus[Characters.Midori].atk
       ),
     };
 
@@ -1118,6 +1123,7 @@ class HealthBar {
   currentHealthText?: Phaser.GameObjects.BitmapText;
   maxHealthText?: Phaser.GameObjects.BitmapText;
   portrait: Phaser.GameObjects.Sprite;
+  attackText?: Phaser.GameObjects.BitmapText;
 
   maxHealth = 0;
   currentHealth = 0;
@@ -1144,7 +1150,8 @@ class HealthBar {
     barX: number,
     barY: number,
     currentHealth: number,
-    maxHealth: number
+    maxHealth: number,
+    attack: number
   ) {
     this.scene = scene;
     this.type = type;
@@ -1190,6 +1197,11 @@ class HealthBar {
         .bitmapText(barX + 33, barY - 2, 'numbers', '')
         .setTint(TINT_CREAM)
         .setDepth(DEPTH_UI);
+      this.attackText = scene.add
+        .bitmapText(barX + 70, barY - 2, 'sodapop', '')
+        .setTint(TINT_CREAM)
+        .setDepth(DEPTH_UI)
+        .setScale(0.9);
     }
 
     this.portrait = scene.add
@@ -1197,6 +1209,7 @@ class HealthBar {
       .setDepth(DEPTH_UI);
 
     this.setHealth(currentHealth, maxHealth);
+    this.setAttack(attack, type);
   }
 
   setHealth(currentHealth: number, maxHealth?: number) {
@@ -1214,6 +1227,16 @@ class HealthBar {
     }
   }
 
+  setAttack(attack: number, type: HealthBarType) {
+    if (type === HealthBarType.Rojo) {
+      this.attackText?.setText(`${attack.toString().padStart(2, '0')} Gwei`);
+    } else if (type === HealthBarType.Blue) {
+      this.attackText?.setText(`${attack.toString().padStart(2, '0')} Txs`);
+    } else {
+      this.attackText?.setText(`${attack.toString().padStart(2, '0')} Block`);
+    }
+  }
+
   setVisible(visible: boolean) {
     this.barFrame.setVisible(visible);
     this.bar1.setVisible(visible);
@@ -1221,6 +1244,7 @@ class HealthBar {
     this.currentHealthText?.setVisible(visible);
     this.maxHealthText?.setVisible(visible);
     this.portrait.setVisible(visible);
+    this.attackText?.setVisible(visible);
   }
 
   async animateDamage(damage: number, color: number = TINT_YELLOW, shouldShake = true) {
@@ -1293,6 +1317,31 @@ class HealthBar {
 
     damageBar1.destroy();
     damageBar2.destroy();
+  }
+
+  async animateRecovery(recoveryAmount: number) {
+    const startWidth = this.bar1.width;
+    this.setHealth(this.currentHealth + recoveryAmount);
+    const recoveryWidth = this.bar1.width - startWidth;
+
+    const recoveryBar1 = this.scene.add
+      .rectangle(this.bar1.x + startWidth, this.bar1.y, 0, this.bar1.height, TINT_GREEN)
+      .setOrigin(0, 0.5)
+      .setDepth(DEPTH_UI);
+    const recoveryBar2 = this.scene.add
+      .rectangle(this.bar2.x + startWidth, this.bar2.y, 0, this.bar2.height, TINT_GREEN)
+      .setOrigin(0, 0.5)
+      .setDepth(DEPTH_UI);
+
+    await asyncTween(this.scene, {
+      targets: [recoveryBar1, recoveryBar2],
+      width: recoveryWidth,
+      duration: 400,
+      ease: steppedCubicEase(400),
+    });
+
+    recoveryBar1.destroy();
+    recoveryBar2.destroy();
   }
 }
 
@@ -1706,6 +1755,7 @@ class QuizPhaseState extends State {
 
   currentQuestionIndex = 0;
   dialog!: Dialog;
+  dialogOverlay!: Phaser.GameObjects.Rectangle;
   choiceCards!: ChoiceCard[];
 
   init(scene: BattleScene) {
@@ -1715,7 +1765,12 @@ class QuizPhaseState extends State {
       width: 240,
       height: 90,
     }).setDepth(DEPTH_MODAL);
+    this.dialogOverlay = this.scene.add
+      .rectangle(this.dialog.box.x, this.dialog.box.y, this.dialog.box.width, this.dialog.box.height, 0x000000, 0.5)
+      .setDepth(DEPTH_MODAL);
+
     this.dialog.setVisible(false);
+    this.dialogOverlay.setVisible(false);
   }
 
   handleEntered(scene: BattleScene) {
@@ -1775,6 +1830,7 @@ class QuizPhaseState extends State {
 
     await wait(this.scene, 400);
 
+    this.dialogOverlay.setVisible(true);
     // play success or fail Sound
     if (isCorrect) {
       this.scene.soundSuccess.play();
@@ -1865,6 +1921,7 @@ class QuizPhaseState extends State {
   }
 
   handleExited() {
+    this.dialogOverlay.setVisible(false);
     this.dialog.setVisible(false);
   }
 }
@@ -1873,9 +1930,11 @@ class ChoiceCard {
   scene: BaseScene;
   box: Phaser.GameObjects.Rectangle;
   text: Phaser.GameObjects.BitmapText;
+  choice: number;
 
   constructor(scene: BaseScene, x: number, y: number, choice: number, onClick: () => void) {
     this.scene = scene;
+    this.choice = choice;
     const color = TINT_CREAM;
 
     this.box = scene.add
@@ -1890,6 +1949,16 @@ class ChoiceCard {
       .setOrigin(0.5)
       .setTint(TINT_BLUE)
       .setDepth(DEPTH_MODAL);
+
+    this.scene.input.keyboard?.on('keydown', this.handleKeyDown, this);
+  }
+
+  handleKeyDown(event: any) {
+    const key = event.key;
+
+    if (parseInt(key) === this.choice) {
+      this.box.emit('pointerdown');
+    }
   }
 
   disableInteractive() {
@@ -1924,6 +1993,8 @@ class ChoiceCard {
   }
 
   destroy() {
+    this.scene.input.keyboard?.off('keydown', this.handleKeyDown, this);
+
     this.box.destroy();
     this.text.destroy();
   }
@@ -2194,7 +2265,8 @@ class SolveState extends State {
 
     // Group matches by type
     const matchGroups = groups.filter((group) => group.length >= 3);
-    scene.spheresClearedCount += matchGroups.flat().length;
+    scene.clearedSpheresThisTurn = matchGroups.flat().length;
+    scene.spheresClearedCount += scene.clearedSpheresThisTurn;
     scene.scoreText.setText(`Score: ${scene.spheresClearedCount.toString()}`);
 
     const matchedByType: Map<SphereType, Sphere[]> = new Map();
@@ -2413,6 +2485,24 @@ class TurnResultPhaseState extends State {
       );
     }
     await Promise.all(hideAnimations);
+
+    const defendingCharacters = scene.activeCharacters.filter(
+      (character) => scene.currentTurnInputs[character] === BattleActions.Defend
+    );
+
+    for (const character of defendingCharacters) {
+      const status = scene.battleState.partyMemberStatuses[character];
+      const maxRecovery = status.maxHp - status.hp;
+      const baseRecovery = Math.floor(scene.clearedSpheresThisTurn / 3);
+      const characterRecovery = scene.battleState.stockCounts[CHARACTER_SPHERE_TYPES[character]];
+      const actualRecovery = Math.min(baseRecovery + characterRecovery, maxRecovery);
+
+      if (actualRecovery > 0) {
+        status.hp += actualRecovery;
+        await scene.partyHealth[character].animateRecovery(actualRecovery);
+        await wait(scene, 200);
+      }
+    }
 
     const fadeInAnimations = [scene.enemySkelly.animateFaded(false)];
     for (const character of scene.activeCharacters) {
