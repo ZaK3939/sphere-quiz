@@ -493,7 +493,7 @@ export default class BattleScene extends BaseScene {
             [Characters.Blue]: { hp: 60, maxHp: 93, atk: 25 },
             [Characters.Midori]: { hp: 100, maxHp: 123, atk: 35 },
           },
-          { hp: 1, maxHp: 500 }
+          { hp: 500, maxHp: 500 }
         );
         break;
       case 'high':
