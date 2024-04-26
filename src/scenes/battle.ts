@@ -581,6 +581,20 @@ export default class BattleScene extends BaseScene {
       );
     } else {
       console.log('No transactions found for the specified address');
+      let hpSettings = {
+        [Characters.Rojo]: { hp: 80, maxHp: 101 },
+        [Characters.Blue]: { hp: 60, maxHp: 93 },
+        [Characters.Midori]: { hp: 100, maxHp: 123 },
+      };
+      this.battleState = new BattleState(
+        {
+          ...hpSettings,
+          [Characters.Rojo]: { ...hpSettings[Characters.Rojo], atk: 15 },
+          [Characters.Blue]: { ...hpSettings[Characters.Blue], atk: 5 },
+          [Characters.Midori]: { ...hpSettings[Characters.Midori], atk: 10 },
+        },
+        { hp: bossHP, maxHp: bossHP }
+      );
     }
   }
 }
