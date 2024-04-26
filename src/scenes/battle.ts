@@ -3000,17 +3000,13 @@ class EndState extends State {
 
       console.log('NFT minted:', tx);
 
-      // Mint buttonを削除
       this.mintButton.destroy();
 
-      const chestOwnedText = scene.add
-        .bitmapText(this.mintButton.x, this.mintButton.y, 'sodapop', 'Treasure Chest Acquired!', 16)
-        .setOrigin(0.5)
-        .setTint(TINT_CREAM)
-        .setDepth(DEPTH_MODAL);
+      this.dialog.setText('Treasure Chest Acquired!');
+      this.dialog.text.setTint(TINT_CREAM);
 
       await asyncTween(scene, {
-        targets: [chestOwnedText],
+        targets: [this.dialog.text],
         alpha: { from: 0, to: 1 },
         duration: 500,
       });
