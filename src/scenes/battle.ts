@@ -552,9 +552,9 @@ export default class BattleScene extends BaseScene {
       let hpSettings;
       if (balance < lowThreshold) {
         hpSettings = {
-          [Characters.Rojo]: { hp: 50, maxHp: 101 },
-          [Characters.Blue]: { hp: 30, maxHp: 93 },
-          [Characters.Midori]: { hp: 70, maxHp: 123 },
+          [Characters.Rojo]: { hp: 50, maxHp: 71 },
+          [Characters.Blue]: { hp: 30, maxHp: 63 },
+          [Characters.Midori]: { hp: 70, maxHp: 93 },
         };
       } else if (balance < mediumThreshold) {
         hpSettings = {
@@ -564,9 +564,9 @@ export default class BattleScene extends BaseScene {
         };
       } else {
         hpSettings = {
-          [Characters.Rojo]: { hp: 101, maxHp: 101 },
-          [Characters.Blue]: { hp: 93, maxHp: 93 },
-          [Characters.Midori]: { hp: 123, maxHp: 123 },
+          [Characters.Rojo]: { hp: 110, maxHp: 110 },
+          [Characters.Blue]: { hp: 100, maxHp: 100 },
+          [Characters.Midori]: { hp: 130, maxHp: 130 },
         };
       }
 
@@ -2514,7 +2514,7 @@ class TurnResultPhaseState extends State {
       for (const character of defendingCharacters) {
         const status = scene.battleState.partyMemberStatuses[character];
         const maxRecovery = status.maxHp - status.hp;
-        const baseRecovery = Math.floor(scene.clearedSpheresThisTurn / 3);
+        const baseRecovery = Math.floor(scene.clearedSpheresThisTurn / 2);
         const characterRecovery = scene.battleState.stockCounts[CHARACTER_SPHERE_TYPES[character]];
         const actualRecovery = Math.min(baseRecovery + characterRecovery, maxRecovery);
 
