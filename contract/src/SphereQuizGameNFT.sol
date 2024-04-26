@@ -9,7 +9,6 @@ import { SafeTransferLib } from "solady/utils/SafeTransferLib.sol";
 import { Base64 } from "solady/utils/Base64.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import { console2 } from "forge-std/console2.sol";
 contract SphereQuizGameNFT is Ownable, ERC721, EIP712 {
     /*//////////////////////////////////////////////////////////////
                                  USING

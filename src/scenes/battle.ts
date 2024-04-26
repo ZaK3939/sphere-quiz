@@ -2890,9 +2890,9 @@ class EndState extends State {
         bottomLeft.x + 164,
         bottomLeft.y - 26,
         'portraitPhi',
-        'Phi\nProtocol\nGames',
+        'Pls\nAdd\nQuiz',
         TINT_BLUE,
-        'https://phiprotocol.xyz/'
+        'https://forms.gle/AUJ8YaX9wsexi8ie7'
       ),
       new EndCard(
         scene,
