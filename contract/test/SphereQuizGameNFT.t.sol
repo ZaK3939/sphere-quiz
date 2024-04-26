@@ -39,7 +39,7 @@ contract SphereQuizGameNFTTest is Test {
         assertEq(demo721.gameCleared(alice, gameRound), true);
         assertEq(demo721.balanceOf(alice), 1);
         assertEq(demo721.currentTokenId(), 1);
-        assertEq(demo721.bossHP(), 410);
+        assertEq(demo721.bossHP(), 520);
         assertEq(demo721.accumulatedETH(), demo721.mintFee());
         (uint256 score, uint256 timestamp)= demo721.getScoreData(alice, gameRound);
         assertEq(score, 10);
@@ -52,7 +52,7 @@ contract SphereQuizGameNFTTest is Test {
         demo721.mint{ value: demo721.mintFee() }(alice,  20, sig2);
         assertEq(demo721.balanceOf(alice), 2);
         assertEq(demo721.currentTokenId(), 2);
-        assertEq(demo721.bossHP(), 420);
+        assertEq(demo721.bossHP(), 540);
         assertEq(demo721.accumulatedETH(), demo721.mintFee()*2);
         (score, timestamp)= demo721.getScoreData(alice, gameRound);
         console2.log(demo721.getPlayerKeys(alice)[1]);
@@ -61,7 +61,7 @@ contract SphereQuizGameNFTTest is Test {
         demo721.mint{ value: demo721.mintFee() }(alice,  11, sig3);
         assertEq(demo721.balanceOf(alice), 3);
         assertEq(demo721.currentTokenId(), 3);
-        assertEq(demo721.bossHP(), 430);
+        assertEq(demo721.bossHP(), 560);
         assertEq(demo721.accumulatedETH(), demo721.mintFee()*3);
         (score, timestamp)= demo721.getScoreData(alice, gameRound);
         console2.log(demo721.getPlayerKeys(alice)[2]);
@@ -71,7 +71,7 @@ contract SphereQuizGameNFTTest is Test {
         demo721.mint{ value: demo721.mintFee() }(alice,  12, sig4);
         assertEq(demo721.balanceOf(alice), 0);
         assertEq(demo721.currentTokenId(), 0);
-        assertEq(demo721.bossHP(), 400);
+        assertEq(demo721.bossHP(), 500);
         assertEq(demo721.accumulatedETH(), 0);
         (score, timestamp)= demo721.getScoreData(alice, gameRound);
         assertEq(score, 12);

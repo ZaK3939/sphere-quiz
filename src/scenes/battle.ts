@@ -43,6 +43,7 @@ import {
 } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
 import { quizData } from 'gate/quiz-data';
+import SphereQuizGameNFTAbi from '../abi/SphereQuizGameNFT.json';
 
 type Vector2 = Phaser.Math.Vector2;
 
@@ -191,6 +192,7 @@ export default class BattleScene extends BaseScene {
     scene.load.image('battleSphereStock', 'ui/color_stock.png');
     scene.load.image('byline', 'ui/byline.png');
     scene.load.image('chest', 'ui/chest.png');
+    scene.load.image('treasure', 'ui/treasure.png');
 
     scene.load.bitmapFont('numbers', 'ui/numbers.png', 'ui/numbers.fnt');
 
@@ -2825,6 +2827,7 @@ class EndState extends State {
   walletClient: any;
   mintButton!: MintButton;
   chest!: Phaser.GameObjects.Image;
+  treasure!: Phaser.GameObjects.Image;
 
   static preload(scene: BaseScene) {
     scene.load.image('portraitPhi', 'ui/phi.png');
@@ -3014,6 +3017,26 @@ class EndState extends State {
         targets: [chestOwnedText],
         alpha: { from: 0, to: 1 },
         duration: 500,
+      });
+
+      const scrollSepoliaClient = createPublicClient({
+        chain: scrollSepolia,
+        transport: http(),
+      });
+      scrollSepoliaClient.watchContractEvent({
+        address: SPHERE_QUIZ_NFT_ADDRESS,
+        abi: SphereQuizGameNFTAbi.abi,
+        eventName: 'ChestOpened',
+        onLogs: (log: any) => {
+          const [player, ethAmount] = log.args;
+          console.log('Player:', player, 'Eth Amount:', ethAmount);
+
+          this.chest.destroy();
+          const bossPosition = scene.enemySkelly.sprite.getCenter();
+          this.treasure = scene.add.image(bossPosition.x, bossPosition.y + 25, 'chest').setDepth(DEPTH_ENTITIES);
+          this.treasure.setScale(0.05);
+          this.dialog.setText('Congratulations!\n Got treasure chest!');
+        },
       });
     } catch (error) {
       console.error('Error minting NFT:', error);

@@ -52,8 +52,8 @@ contract SphereQuizGameNFT is Ownable, ERC721, EIP712 {
         uint256 timestamp;
     }
 
-    uint256 public constant INITIAL_BOSS_HP = 400;
-    uint256 public constant HP_INCREMENT_PER_MINT = 10;
+    uint256 public constant INITIAL_BOSS_HP = 500;
+    uint256 public constant HP_INCREMENT_PER_MINT = 20;
 
     bytes32 public constant MINT_TYPEHASH = keccak256("Mint(address to,uint256 score)");
 
@@ -80,7 +80,7 @@ contract SphereQuizGameNFT is Ownable, ERC721, EIP712 {
         mintFee = 0.00001 ether;
         randomId = 0; // seed num
         gameRound = 1;
-        gameDifficulty = 100;
+        gameDifficulty = 20;
         bossHP = INITIAL_BOSS_HP;
         chestKey = _generateKey();
     }
@@ -120,7 +120,7 @@ contract SphereQuizGameNFT is Ownable, ERC721, EIP712 {
     }
 
     
-    function openChest(address player) public {
+    function openChest(address player) internal {
         if (canOpenChest(player)) {
             uint256 protocolFeeDestinationAmount = accumulatedETH / 10;
             uint256 ethAmount = accumulatedETH - protocolFeeDestinationAmount;
