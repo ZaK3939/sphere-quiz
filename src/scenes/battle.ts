@@ -159,6 +159,7 @@ export default class BattleScene extends BaseScene {
   currentTurnResult!: TurnResult;
 
   firstRound = true;
+  quizCorrect = false;
 
   spheresClearedCount = 0;
   clearedSpheresThisTurn = 0;
@@ -1836,8 +1837,10 @@ class QuizPhaseState extends State {
     this.dialogOverlay.setVisible(true);
     // play success or fail Sound
     if (isCorrect) {
+      this.scene.quizCorrect = true;
       this.scene.soundSuccess.play();
     } else {
+      this.scene.quizCorrect = false;
       this.scene.soundFail.play();
     }
     await selectedCard.animateResult(isCorrect);
@@ -2493,20 +2496,21 @@ class TurnResultPhaseState extends State {
       (character) => scene.currentTurnInputs[character] === BattleActions.Defend
     );
 
-    for (const character of defendingCharacters) {
-      const status = scene.battleState.partyMemberStatuses[character];
-      const maxRecovery = status.maxHp - status.hp;
-      const baseRecovery = Math.floor(scene.clearedSpheresThisTurn / 3);
-      const characterRecovery = scene.battleState.stockCounts[CHARACTER_SPHERE_TYPES[character]];
-      const actualRecovery = Math.min(baseRecovery + characterRecovery, maxRecovery);
+    if (scene.quizCorrect) {
+      for (const character of defendingCharacters) {
+        const status = scene.battleState.partyMemberStatuses[character];
+        const maxRecovery = status.maxHp - status.hp;
+        const baseRecovery = Math.floor(scene.clearedSpheresThisTurn / 3);
+        const characterRecovery = scene.battleState.stockCounts[CHARACTER_SPHERE_TYPES[character]];
+        const actualRecovery = Math.min(baseRecovery + characterRecovery, maxRecovery);
 
-      if (actualRecovery > 0) {
-        status.hp += actualRecovery;
-        await scene.partyHealth[character].animateRecovery(actualRecovery);
-        await wait(scene, 200);
+        if (actualRecovery > 0) {
+          status.hp += actualRecovery;
+          await scene.partyHealth[character].animateRecovery(actualRecovery);
+          await wait(scene, 200);
+        }
       }
     }
-
     const fadeInAnimations = [scene.enemySkelly.animateFaded(false)];
     for (const character of scene.activeCharacters) {
       fadeInAnimations.push(scene.party[character].animateFaded(false));

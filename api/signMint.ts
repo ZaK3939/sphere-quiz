@@ -5,7 +5,7 @@ import { scroll, scrollSepolia } from 'viem/chains';
 const SIGNER_PRIVATE_KEY = process.env.SIGNER_PRIVATE_KEY ?? '0x00';
 const account = privateKeyToAccount(SIGNER_PRIVATE_KEY as Hex);
 
-const SPHERE_QUIZ_NFT_ADDRESS = '0x031339Eb7CB8732de7B25Ec0a0767E34938C0a63';
+const SPHERE_QUIZ_NFT_ADDRESS = '0x82845DfA6D2185547480372EeDf213d4C2976da3';
 
 const domain = {
   name: 'SPHERE-QUIZ NFT MINT',
