@@ -3002,11 +3002,16 @@ class EndState extends State {
 
       this.mintButton.destroy();
 
-      this.dialog.setText('Treasure Chest Acquired!');
-      this.dialog.text.setTint(TINT_CREAM);
+      const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
+      const chestOwnedText = scene.add
+        .bitmapText(dialogBottomCenter.x, dialogBottomCenter.y + 28, 'sodapop', 'Treasure Chest Acquired!')
+        .setOrigin(0.5)
+        .setTint(TINT_CREAM)
+        .setDepth(DEPTH_MODAL)
+        .setScale(0.9);
 
       await asyncTween(scene, {
-        targets: [this.dialog.text],
+        targets: [chestOwnedText],
         alpha: { from: 0, to: 1 },
         duration: 500,
       });
