@@ -16,6 +16,7 @@ export async function signMintData(to: string, score: number): Promise<`0x${stri
     return data.signature;
   } else {
     console.error('Error signing mint data');
-    return `0x`;
+    // throw an error
+    throw new Error('Error signing mint data');
   }
 }
