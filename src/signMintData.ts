@@ -1,5 +1,8 @@
 export async function signMintData(to: string, score: number): Promise<`0x${string}`> {
-  const response = await fetch('/api/signMint', {
+  const PUBLIC_VERCEL_URL = process.env.PUBLIC_VERCEL_URL;
+  let baseUrl = !IS_DEV_MODE ? '' : PUBLIC_VERCEL_URL;
+
+  const response = await fetch(`${baseUrl}/api/signMint`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

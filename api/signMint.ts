@@ -40,6 +40,11 @@ export default async function handler(req, res) {
     try {
       const signature = await signMintData({ to, score });
 
+      // For debugging purposes
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
       res.status(200).json({ signature });
     } catch (error) {
       console.error('Error:', error);

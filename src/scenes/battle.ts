@@ -190,6 +190,7 @@ export default class BattleScene extends BaseScene {
     scene.load.image('battleSphereWindow', 'ui/battle_sphere_window.png');
     scene.load.image('battleSphereStock', 'ui/color_stock.png');
     scene.load.image('byline', 'ui/byline.png');
+    scene.load.image('chest', 'ui/chest.png');
 
     scene.load.bitmapFont('numbers', 'ui/numbers.png', 'ui/numbers.fnt');
 
@@ -573,7 +574,7 @@ export default class BattleScene extends BaseScene {
           [Characters.Blue]: { ...hpSettings[Characters.Blue], atk: transactionCountAttack },
           [Characters.Midori]: { ...hpSettings[Characters.Midori], atk: blockProximityAttack },
         },
-        { hp: 700, maxHp: 700 }
+        { hp: 1, maxHp: 700 }
       );
     } else {
       console.log('No transactions found for the specified address');
@@ -2761,9 +2762,13 @@ class MintButton {
   scene: BaseScene;
   box: Phaser.GameObjects.Rectangle;
   text: Phaser.GameObjects.BitmapText;
+  x: number;
+  y: number;
 
   constructor(scene: BaseScene, x: number, y: number, onClick: () => void) {
     this.scene = scene;
+    this.x = x;
+    this.y = y;
 
     const width = 60;
     const height = 20;
@@ -2804,7 +2809,12 @@ class MintButton {
       }),
     ]);
   }
+  destroy() {
+    this.box.destroy();
+    this.text.destroy();
+  }
 }
+
 class EndState extends State {
   fadeRect!: Phaser.GameObjects.Rectangle;
   dialog!: Dialog;
@@ -2814,6 +2824,7 @@ class EndState extends State {
   analyticsEndType: string;
   walletClient: any;
   mintButton!: MintButton;
+  chest!: Phaser.GameObjects.Image;
 
   static preload(scene: BaseScene) {
     scene.load.image('portraitPhi', 'ui/phi.png');
@@ -2826,6 +2837,7 @@ class EndState extends State {
     this.message = message;
     this.music = music;
     this.analyticsEndType = analyticsEndType;
+
     try {
       this.walletClient = createWalletClient({
         chain: scroll,
@@ -2898,6 +2910,16 @@ class EndState extends State {
     this.music.play();
     await Promise.all(scene.activeCharacters.map((character) => scene.party[character].animateVictory()));
     await wait(scene, 300);
+
+    if (this.analyticsEndType === 'EndVictory') {
+      await Promise.all(scene.activeCharacters.map((character) => scene.party[character].animateVictory()));
+      await wait(scene, 300);
+
+      const bossPosition = scene.enemySkelly.sprite.getCenter();
+      this.chest = scene.add.image(bossPosition.x, bossPosition.y + 25, 'chest').setDepth(DEPTH_ENTITIES);
+      this.chest.setScale(0.01);
+    }
+
     await asyncTween(scene, {
       targets: [this.fadeRect],
       alpha: 0.8,
@@ -2905,13 +2927,15 @@ class EndState extends State {
     });
     this.dialog.animateAppear();
 
-    const score = scene.spheresClearedCount;
+    if (this.analyticsEndType === 'EndVictory') {
+      const score = scene.spheresClearedCount;
 
-    const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
-    this.mintButton = new MintButton(scene, dialogBottomCenter.x, dialogBottomCenter.y + 30, () =>
-      this.handleMintButtonClick(score)
-    );
-    await this.mintButton.animateAppear();
+      const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
+      this.mintButton = new MintButton(scene, dialogBottomCenter.x, dialogBottomCenter.y + 28, () =>
+        this.handleMintButtonClick(score, scene)
+      );
+      await this.mintButton.animateAppear();
+    }
 
     for (const endCard of this.endCards) {
       await wait(scene, 300);
@@ -2919,7 +2943,7 @@ class EndState extends State {
     }
   }
 
-  async handleMintButtonClick(score: number) {
+  async handleMintButtonClick(score: number, scene: BattleScene) {
     if (!this.walletClient) {
       console.error('Wallet client not initialized');
       return;
@@ -2927,6 +2951,24 @@ class EndState extends State {
 
     try {
       const [address] = await this.walletClient.getAddresses();
+
+      const currentChainId = await this.walletClient.getChainId();
+
+      const targetChainId = scroll.id;
+
+      if (currentChainId !== targetChainId) {
+        try {
+          await (window as any).ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+          });
+          console.log('Network switched to Scroll');
+        } catch (error) {
+          console.error('Error switching network:', error);
+          alert('Please switch to the Scroll network in your wallet.');
+          return;
+        }
+      }
 
       const signature = await signMintData(address, score);
 
@@ -2957,6 +2999,21 @@ class EndState extends State {
       });
 
       console.log('NFT minted:', tx);
+
+      // Mint buttonを削除
+      this.mintButton.destroy();
+
+      const chestOwnedText = scene.add
+        .bitmapText(this.mintButton.x, this.mintButton.y, 'sodapop', 'Treasure Chest Acquired!', 16)
+        .setOrigin(0.5)
+        .setTint(TINT_CREAM)
+        .setDepth(DEPTH_MODAL);
+
+      await asyncTween(scene, {
+        targets: [chestOwnedText],
+        alpha: { from: 0, to: 1 },
+        duration: 500,
+      });
     } catch (error) {
       console.error('Error minting NFT:', error);
     }
