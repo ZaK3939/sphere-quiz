@@ -3,6 +3,7 @@ import BattleScene from 'gate/scenes/battle';
 import { asyncAnimation, asyncLoad } from 'gate/util';
 import { createPublicClient, createWalletClient, http, custom, Address } from 'viem';
 import { scroll } from 'viem/chains';
+import { getbossHp } from 'gate/contactCall';
 
 export default class LoadingScene extends BaseScene {
   loadingCount!: Phaser.GameObjects.Sprite;
@@ -127,7 +128,9 @@ export default class LoadingScene extends BaseScene {
         this.loadingCount.disableInteractive(); // インタラクションを無効化
         await asyncAnimation(this.loadingCount, 'loadingStartToEmpty'); // ロード完了アニメーション
         if (this.walletClient) {
-          await this.battleScene.setBattleState(address); // バトルステートを設定
+          const bossHp = await getbossHp(); // ボスHPを取得
+          console.log('bossHp:', bossHp);
+          await this.battleScene.setBattleState(address, Number(bossHp)); // バトルステートを設定
           this.scene.run('battle'); // バトルシーンを開始
         } else {
           console.error('Wallet client not initialized');

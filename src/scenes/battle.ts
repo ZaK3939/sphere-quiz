@@ -41,7 +41,7 @@ import {
   parseEther,
   formatUnits,
 } from 'viem';
-import { scroll } from 'viem/chains';
+import { scroll, scrollSepolia } from 'viem/chains';
 import { quizData } from 'gate/quiz-data';
 
 type Vector2 = Phaser.Math.Vector2;
@@ -494,7 +494,7 @@ export default class BattleScene extends BaseScene {
       this.partyHealth[character].setVisible(true);
     }
   }
-  async setBattleState(address: Address) {
+  async setBattleState(address: Address, bossHP: number) {
     console.log('Setting battle state for address:', address);
 
     // scrollscanのAPIエンドポイント
@@ -574,7 +574,7 @@ export default class BattleScene extends BaseScene {
           [Characters.Blue]: { ...hpSettings[Characters.Blue], atk: transactionCountAttack },
           [Characters.Midori]: { ...hpSettings[Characters.Midori], atk: blockProximityAttack },
         },
-        { hp: 1, maxHp: 700 }
+        { hp: bossHP, maxHp: bossHP }
       );
     } else {
       console.log('No transactions found for the specified address');
@@ -2840,7 +2840,7 @@ class EndState extends State {
 
     try {
       this.walletClient = createWalletClient({
-        chain: scroll,
+        chain: scrollSepolia,
         transport: custom((window as any).ethereum),
       });
     } catch (error) {
@@ -2954,7 +2954,7 @@ class EndState extends State {
 
       const currentChainId = await this.walletClient.getChainId();
 
-      const targetChainId = scroll.id;
+      const targetChainId = scrollSepolia.id;
 
       if (currentChainId !== targetChainId) {
         try {
@@ -2976,7 +2976,7 @@ class EndState extends State {
 
       const tx = await this.walletClient.sendTransaction({
         account: address,
-        chain: scroll,
+        chain: scrollSepolia,
         to: SPHERE_QUIZ_NFT_ADDRESS,
         data: encodeFunctionData({
           abi: [
