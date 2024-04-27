@@ -574,21 +574,21 @@ export default class BattleScene extends BaseScene {
       let hpSettings;
       if (balance < lowThreshold) {
         hpSettings = {
-          [Characters.Rojo]: { hp: 50, maxHp: 71 },
-          [Characters.Blue]: { hp: 30, maxHp: 63 },
-          [Characters.Midori]: { hp: 70, maxHp: 93 },
+          [Characters.Rojo]: { hp: 50, maxHp: 101 },
+          [Characters.Blue]: { hp: 30, maxHp: 93 },
+          [Characters.Midori]: { hp: 70, maxHp: 123 },
         };
       } else if (balance < mediumThreshold) {
         hpSettings = {
-          [Characters.Rojo]: { hp: 80, maxHp: 101 },
-          [Characters.Blue]: { hp: 60, maxHp: 93 },
-          [Characters.Midori]: { hp: 100, maxHp: 123 },
+          [Characters.Rojo]: { hp: 90, maxHp: 121 },
+          [Characters.Blue]: { hp: 70, maxHp: 113 },
+          [Characters.Midori]: { hp: 80, maxHp: 133 },
         };
       } else {
         hpSettings = {
-          [Characters.Rojo]: { hp: 110, maxHp: 110 },
-          [Characters.Blue]: { hp: 100, maxHp: 100 },
-          [Characters.Midori]: { hp: 130, maxHp: 130 },
+          [Characters.Rojo]: { hp: 140, maxHp: 140 },
+          [Characters.Blue]: { hp: 120, maxHp: 120 },
+          [Characters.Midori]: { hp: 150, maxHp: 150 },
         };
       }
 
@@ -779,7 +779,7 @@ class BattleState {
       const { baseAttackPower, adjustedVolatility, overallAttackParameter } = await this.getAttackParameters();
       console.log('Boss Attack Parameters:', baseAttackPower, adjustedVolatility, overallAttackParameter);
       // 全体攻撃の条件を満たしているかどうかを判定
-      const isAllOutAttack = Object.values(this.stockCounts).some((count) => count >= 8);
+      const isAllOutAttack = Object.values(this.stockCounts).some((count) => count >= 11);
 
       if (isAllOutAttack) {
         // 全体攻撃の場合
@@ -850,7 +850,6 @@ class BattleState {
       };
     } catch (error) {
       console.error('Error getting attack parameters:', error);
-      // デフォルトの攻撃パラメータを返す
       return {
         baseAttackPower: 20,
         adjustedVolatility: 25,
@@ -2997,7 +2996,7 @@ class EndState extends State {
         bottomLeft.x + 164,
         bottomLeft.y - 26,
         'portraitPhi',
-        'Pls\nAdd\nQuiz',
+        'Proposal\nAdd\nQuiz Here',
         TINT_BLUE,
         'https://forms.gle/AUJ8YaX9wsexi8ie7'
       ),

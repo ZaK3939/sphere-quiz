@@ -96,7 +96,7 @@ export default class LoadingScene extends BaseScene {
       .setLetterSpacing(2);
 
     this.topScoreText = this.add
-      .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY + 100, 'pixelFont', 'Top Score: -', 16)
+      .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY + 80, 'pixelFont', 'Top Score: -', 16)
       .setOrigin(0.5)
       .setTint(0xffffff);
     this.fetchTopScore(); //Get top score from Graph
