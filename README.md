@@ -4,18 +4,30 @@
 
 **[User Flow] Very simple!!**
 
-1. 😎 Start Game
-2. 👛 Connect wallet and load playar character parameter
+0. 🎁 New Round（Chest key is decided by Chainlink randomness）
+
+-- Main part
+
+1. 😎 User Start Game
+2. 👛 Connect wallet to Scroll and Load playar character parameter (Hp,Attack)
 3. 🎓 Proceed through stages (Quiz/Sphere)
 4. ⚡️ Beet the boss
 5. 🔑 Mint your NFT key
-6. 🎉 (if you are lucky), you can open Eth Treasure Chest
+
+--- Go back to 1.
+
+6. 🎉 (if you are lucky), you can open Eth Treasure Chest 🎁 by ur keys 🔑
+7. 🏯 (if someone succesfully opne box), all of key are burn and start new round.
 
 ## Summary
 
 SphereQuizGame innovatively combines off-chain and on-chain elements, offering a unique gaming experience where characters' strength is influenced by players' Scroll Mainnet activity and ETH holdings. The game features quizzes, sphere-matching for HP recovery, and NFT keys for opening treasure chests. As players progress, enemy strength increases based on collected ETH. SphereQuizGame exemplifies crypto gamification, providing an immersive experience that showcases the allure of cryptocurrency.
 
 ![OGP](quizPart.png)
+
+## QuizSet
+
+- Please Proposal from [here](https://forms.gle/AUJ8YaX9wsexi8ie7).
 
 # What Onchain/Offcahin?
 
@@ -33,6 +45,32 @@ SphereQuizGame is an example of gamification filled with the allure of crypto. I
 
 - Todo
 
+## Tech Stack
+
+### Ankr
+
+Our Rpc is supported by Ankr's RPCs
+
+https://www.ankr.com/
+
+### Covalent
+
+To fetch the latest transaction for a specific address on the Scroll Mainnet, you can use the getAllTransactionsForAddress method from the TransactionService:
+
+```
+let latestTransaction = null;
+for await (const resp of client.TransactionService.getAllTransactionsForAddress(
+  "scroll-mainnet",
+  address,
+  { "noLogs": true, "blockSignedAtAsc": false }
+)) {
+  latestTransaction = resp;
+  break;
+}
+```
+
+https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
+
 ## Contract
 
 #### SepoliaScroll
@@ -45,6 +83,11 @@ SphereQuizGame is an example of gamification filled with the allure of crypto. I
 
 - [Phaser](https://phaser.io/)
 - [RBG](https://github.com/Osmose/RBG/)
+
+## Feature Works
+
+- QuizData should be private
+- Launch to ScrollMainnet
 
 ## License
 

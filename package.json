@@ -19,6 +19,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
+    "@covalenthq/client-sdk": "^1.0.2",
     "@wagmi/core": "^2.6.17",
     "connectkit": "^1.7.3",
     "lodash.invert": "^4.3.0",

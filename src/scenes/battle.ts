@@ -44,6 +44,7 @@ import {
 import { scroll, scrollSepolia } from 'viem/chains';
 import { quizData } from 'gate/quiz-data';
 import SphereQuizGameNFTAbi from '../abi/SphereQuizGameNFT.json';
+import { CovalentClient } from '@covalenthq/client-sdk';
 
 type Vector2 = Phaser.Math.Vector2;
 
@@ -499,48 +500,57 @@ export default class BattleScene extends BaseScene {
   }
   async setBattleState(address: Address, bossHP: number) {
     console.log('Setting battle state for address:', address);
+    const client = new CovalentClient(import.meta.env.VITE_API_KEY_COVALENT);
+    let latestTransaction = null;
+    for await (const resp of client.TransactionService.getAllTransactionsForAddress('scroll-mainnet', address, {
+      noLogs: true,
+      blockSignedAtAsc: false,
+    })) {
+      latestTransaction = resp;
+      break;
+    }
 
-    // scrollscanのAPIエンドポイント
-    const apiUrl = `https://api.scrollscan.com/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${
-      import.meta.env.VITE_API_KEY_SCROLL
-    }`;
-    console.log('apiUrl', apiUrl);
-    // APIを呼び出して最新のトランザクション情報を取得
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    if (data.status === '1' && data.result.length > 0) {
-      const latestTransaction = data.result[data.result.length - 1];
+    if (latestTransaction) {
       console.log('latestTransaction', latestTransaction);
+
       // 最新のトランザクションのガス代を取得
-      const latestTransactionGasPrice = BigInt(latestTransaction.gasPrice);
+      const latestTransactionGasPrice = BigInt(latestTransaction.gas_price);
 
       // 直近7日のトランザクション数を取得
       const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
-      const transactionCountInLastWeek = data.result.filter((tx: any) => parseInt(tx.timeStamp) >= weekAgo).length;
-
+      let transactionCountInLastWeek = 0;
+      for await (const resp of client.TransactionService.getAllTransactionsForAddress('scroll-mainnet', address, {
+        noLogs: true,
+        blockSignedAtAsc: false,
+      })) {
+        const blockSignedAtTimestamp = new Date(resp.block_signed_at).getTime() / 1000;
+        if (blockSignedAtTimestamp >= weekAgo) {
+          transactionCountInLastWeek++;
+        } else {
+          break;
+        }
+      }
       // 最新のトランザクションのブロック番号と現在のブロック番号の近さを計算
       const latestBlockNumber = await this.publicClient.getBlockNumber();
-      const latestTransactionBlockNumber = parseInt(latestTransaction.blockNumber);
+      const latestTransactionBlockNumber = latestTransaction.block_height;
       const blockDiff = Number(latestBlockNumber) - latestTransactionBlockNumber;
-      // https://scrollscan.com/chart/blocktime
-      const daysAgo = Math.floor(blockDiff / 25000); // 1日あたり約25000ブロック（3秒ブロック時間を想定）
+      const harfDaysAgo = Math.floor(blockDiff / 12500); // 24時間あたり約25000ブロック（3秒ブロック時間を想定）
 
       console.log('latestTransactionBlockNumber', latestTransactionBlockNumber, blockDiff);
 
       // 攻撃力を計算 (元の数値+10を上限とする)
       const latestTransactionGasPriceAttack = Math.max(
-        Math.min(parseFloat(formatUnits(latestTransactionGasPrice, 9)) * 50, 70),
+        Math.min(Math.floor(parseFloat(formatUnits(latestTransactionGasPrice, 9))) * 40, 90),
         15
       );
-      const transactionCountAttack = Math.max(Math.min(transactionCountInLastWeek * 3, 45), 10);
-      const blockProximityAttack = Math.max(5, 55 - daysAgo * 10);
+      const transactionCountAttack = Math.max(Math.min(transactionCountInLastWeek * 3, 80), 10);
+      const blockProximityAttack = Math.max(5, 75 - harfDaysAgo * 5);
 
       console.log(
         'data',
-        parseFloat(formatUnits(latestTransactionGasPrice, 9)) * 50,
+        parseFloat(formatUnits(latestTransactionGasPrice, 9)),
         transactionCountInLastWeek,
-        blockProximityAttack
+        harfDaysAgo
       );
       console.log('Attack Power: ', latestTransactionGasPriceAttack, transactionCountAttack, blockProximityAttack);
       // HPを設定 (既存のコード)
