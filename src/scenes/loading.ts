@@ -88,16 +88,6 @@ export default class LoadingScene extends BaseScene {
       .sprite(this.cameras.main.centerX, this.cameras.main.centerY, 'loadingCount')
       .play('loadingWait'); // 初期アニメーション
 
-    this.connectButton = this.add
-      .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
-        fontSize: '20px',
-        color: '#fff',
-      })
-      .setOrigin(0.5);
-
-    this.connectButton.setInteractive({ useHandCursor: true });
-    this.connectButton.on('pointerdown', this.onConnect);
-
     this.titleText = this.add
       .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY - 50, 'pixelFont', 'SPHERE QUIZ', 32)
       .setOrigin(0.5)
@@ -108,14 +98,23 @@ export default class LoadingScene extends BaseScene {
       .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY + 100, 'pixelFont', 'Top Score: -', 16)
       .setOrigin(0.5)
       .setTint(0xffffff);
+    this.fetchTopScore(); //Get top score from Graph
 
-    this.fetchTopScore();
     // リソースロード処理
     this.battleScene = this.scene.get('battle') as BattleScene;
     asyncLoad(this, () => {
       this.battleScene.loadResources(this); // リソースロード
     }).then(() => {
       this.resourcesLoaded = true; // リソースロード完了
+      this.connectButton = this.add
+        .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
+          fontSize: '20px',
+          color: '#fff',
+        })
+        .setOrigin(0.5);
+
+      this.connectButton.setInteractive({ useHandCursor: true });
+      this.connectButton.on('pointerdown', this.onConnect);
     });
   }
 

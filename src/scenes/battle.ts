@@ -109,9 +109,10 @@ export default class BattleScene extends BaseScene {
   dialog!: Dialog;
   blackoutMask!: Phaser.GameObjects.Graphics;
   fullScreenButton!: FullScreenButton;
-  byline!: Phaser.GameObjects.Image;
+  // byline!: Phaser.GameObjects.Image;
   playButton!: PlayButton;
   scoreText!: Phaser.GameObjects.BitmapText;
+  musicCredit!: MusicCredit;
 
   // Enemies
   enemySkelly!: Skelly;
@@ -192,7 +193,7 @@ export default class BattleScene extends BaseScene {
     scene.load.image('battleGrid', 'ui/battle_grid.png');
     scene.load.image('battleSphereWindow', 'ui/battle_sphere_window.png');
     scene.load.image('battleSphereStock', 'ui/color_stock.png');
-    scene.load.image('byline', 'ui/byline.png');
+    // scene.load.image('byline', 'ui/byline.png');
     scene.load.image('chest', 'ui/chest.png');
     scene.load.image('treasure', 'ui/treasure.png');
 
@@ -273,11 +274,11 @@ export default class BattleScene extends BaseScene {
       .setDepth(DEPTH_BACKGROUND);
     this.battleSphereWindow = this.add.image(0, 0, 'battleSphereWindow').setDepth(DEPTH_UI);
     this.battleSphereStock = this.add.image(0, 0, 'battleSphereStock').setDepth(DEPTH_UI);
-    this.byline = this.add.image(0, 0, 'byline').setScale(0.25).setOrigin(1, 0).setDepth(DEPTH_UI);
+    // this.byline = this.add.image(0, 0, 'byline').setScale(0.25).setOrigin(1, 0).setDepth(DEPTH_UI);
 
     Align.In.TopLeft(this.battleSphereWindow, this.battleBorder, -30, -7);
     Align.To.BottomCenter(this.battleSphereStock, this.battleSphereWindow, -4, 8);
-    Align.In.TopRight(this.byline, this.battleBorder, -5, -4);
+    // Align.In.TopRight(this.byline, this.battleBorder, -5, -4);
 
     this.battleSphereWindowOverlay = this.add
       .rectangle(
@@ -392,6 +393,9 @@ export default class BattleScene extends BaseScene {
 
     this.scoreText = this.add.bitmapText(0, 0, 'sodapop', 'Score: 0').setTint(TINT_CREAM).setDepth(DEPTH_UI);
     Align.To.BottomRight(this.scoreText, this.healthEnemy.barFrame, -8, 6);
+
+    this.musicCredit = new MusicCredit(this, 0, 0);
+    Align.In.TopRight(this.musicCredit, this.battleBorder, -65, -4);
 
     this.stateMachine = new StateMachine(
       'intro',
@@ -649,6 +653,51 @@ interface TurnResult {
   partyActionResults: { [key in Characters]: PartyActionResult | null };
   enemyActionResult: EnemyActionResult | null;
   stockCounts: { [key in SphereType]: number };
+}
+
+class MusicCredit extends Phaser.GameObjects.BitmapText {
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y, 'sodapop');
+    scene.add.existing(this);
+    this.setScale(0.9);
+    this.setTint(TINT_CREAM);
+    this.setDepth(DEPTH_UI);
+    this.setInteractive({ useHandCursor: true });
+    this.on('pointerup', () => {
+      window.open('https://www.sound.xyz/samnogg/game-odyssea', '_blank');
+    });
+  }
+
+  async animateText() {
+    const texts = ['playing...', 'sound.xyz'];
+
+    let index = 0; // Start from the beginning of the array
+    while (true) {
+      const text = texts[index]; // Get the current text
+      this.setText(text);
+      this.setInteractive({ useHandCursor: true });
+
+      await asyncTween(this.scene, {
+        targets: [this],
+        alpha: 1,
+        duration: 2000,
+        ease: 'Sine.easeInOut',
+      });
+
+      await wait(this.scene, 3000); // Wait after completing the text
+      await asyncTween(this.scene, {
+        targets: [this],
+        alpha: 0,
+        duration: 2000,
+        ease: 'Sine.easeInOut',
+      });
+
+      index++; // Move to the next item in texts
+      if (index >= texts.length) {
+        index = 0; // Reset index to loop back to the beginning
+      }
+    }
+  }
 }
 
 class BattleState {
@@ -1558,6 +1607,7 @@ class IntroState extends State {
   async handleEntered(scene: BattleScene) {
     scene.hideBattleSphereWindow();
     scene.soundBattleMusicAll.play();
+    scene.musicCredit.animateText();
     await scene.scene.get<LoadingScene>('loading').countdown();
 
     const topLeft = scene.battleBorder.getTopLeft<Vector2>();
@@ -3035,7 +3085,7 @@ class EndState extends State {
 
       const dialogBottomCenter = this.dialog.box.getBottomCenter<Vector2>();
       const chestOwnedText = scene.add
-        .bitmapText(dialogBottomCenter.x, dialogBottomCenter.y + 28, 'sodapop', 'Treasure Chest Acquired!')
+        .bitmapText(dialogBottomCenter.x, dialogBottomCenter.y + 28, 'sodapop', 'Treasure Chest Key Acquired!')
         .setOrigin(0.5)
         .setTint(TINT_CREAM)
         .setDepth(DEPTH_MODAL)

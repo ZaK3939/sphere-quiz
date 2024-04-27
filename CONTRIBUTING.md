@@ -1,4 +1,4 @@
-## Contributing to Frogue
+## Contributing to SquareQuiz
 
 Thanks for your interest in improving Frogue!
 

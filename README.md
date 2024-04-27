@@ -73,7 +73,18 @@ https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
 
 ### The Graph
 
-https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1
+The retrieved top score is then displayed using the topScoreText object in the game scene.
+
+```
+query {
+  mintKeyEvents(orderBy: score, orderDirection: desc, first: 1) {
+    score
+  }
+}
+```
+
+Code: https://github.com/ZaK3939/sphere-quiz/tree/main/spherequizgamenft
+Link: https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1
 
 ## Contract
 
