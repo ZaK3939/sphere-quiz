@@ -61,9 +61,9 @@ export const quizData = [
     choices: [
       'A decentralized autonomous organization',
       'A crypto trading bot',
-      'A privacy-preserving computation platform',
+      'Smart Contract Security Audits and Research',
     ],
-    answer: 'A privacy-preserving computation platform',
+    answer: 'Smart Contract Security Audits and Research',
   },
   // Ankr
   {
