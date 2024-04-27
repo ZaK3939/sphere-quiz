@@ -73,7 +73,8 @@ for await (const resp of client.TransactionService.getAllTransactionsForAddress(
 }
 ```
 
-https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
+- Code
+  https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
 
 ### The Graph
 
@@ -87,8 +88,41 @@ query {
 }
 ```
 
-Code: https://github.com/ZaK3939/sphere-quiz/tree/main/spherequizgamenft
-Link: https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1
+- Code: https://github.com/ZaK3939/sphere-quiz/tree/main/spherequizgamenft
+- Link: https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1
+
+### ChainLinkDataFeed
+
+Retrieve attack parameters from the Data Feed contract:
+
+Call the getAttackParameters() function from the contract to obtain the base attack power, adjusted volatility, and overall attack parameter.
+
+Calculate enemy's attack damage by each turn
+
+Use the retrieved attack parameters to calculate the enemy's attack damage.
+
+```
+async getAttackParameters(): Promise<AttackParameters> {
+    try {
+      const { baseAttackPower, adjustedVolatility, overallAttackParameter } = await getAttackParametersFromContract();
+      return {
+        baseAttackPower,
+        adjustedVolatility,
+        overallAttackParameter,
+      };
+    } catch (error) {
+      console.error('Error getting attack parameters:', error);
+      return {
+        baseAttackPower: 20,
+        adjustedVolatility: 25,
+        overallAttackParameter: 0.8,
+      };
+    }
+  }
+```
+
+- Frontend https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
+- Contract https://github.com/ZaK3939/sphere-quiz/blob/main/contract/src/BossStats.sol
 
 ## Contract
 
