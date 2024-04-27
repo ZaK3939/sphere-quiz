@@ -3,7 +3,8 @@ import BattleScene from 'gate/scenes/battle';
 import { asyncAnimation, asyncLoad } from 'gate/util';
 import { createPublicClient, createWalletClient, http, custom, Address } from 'viem';
 import { scroll } from 'viem/chains';
-import { getbossHp } from 'gate/contactCall';
+import { getbossHp } from 'gate/scrollCall';
+import { getAttackParametersFromContract } from 'gate/sepoliaCall';
 
 interface MintKeyEvent {
   keyId: string;
@@ -182,6 +183,8 @@ export default class LoadingScene extends BaseScene {
         if (this.walletClient) {
           const bossHp = await getbossHp(); // ボスHPを取得
           console.log('bossHp:', bossHp);
+          const bossStats = await getAttackParametersFromContract();
+          console.log('bossStats:', bossStats);
           await this.battleScene.setBattleState(address, Number(bossHp)); // バトルステートを設定
           this.scene.run('battle'); // バトルシーンを開始
         } else {

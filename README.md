@@ -4,7 +4,7 @@
 
 **[User Flow] Very simple!!**
 
-0. 🎁 New Round（Chest key is decided by Chainlink randomness）
+0. 🎁 New Round（Chest key is decided by randomness）
 
 -- Main part
 
@@ -18,6 +18,10 @@
 
 6. 🎉 (if you are lucky), you can open Eth Treasure Chest 🎁 by ur keys 🔑
 7. 🏯 (if someone succesfully opne box), all of key are burn and start new round.
+
+## Sound
+
+https://www.sound.xyz/samnogg/game-odyssea
 
 ## Summary
 
@@ -93,6 +97,12 @@ Link: https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1
 | contract          | contract address                                                                  |
 | ----------------- | --------------------------------------------------------------------------------- |
 | SphereQuizGameNFT | https://sepolia.scrollscan.com/address/0x82845dfa6d2185547480372eedf213d4c2976da3 |
+
+#### Sepolia
+
+| contract  | contract address                                                                |
+| --------- | ------------------------------------------------------------------------------- |
+| BossStats | https://sepolia.etherscan.io/address/0xbdc3bd11d25dba5427ef3e7a072cdece99caf001 |
 
 ## Ack
 

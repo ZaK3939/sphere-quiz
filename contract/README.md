@@ -24,7 +24,13 @@ forge script script/Deploy.s.sol:Deploy --rpc-url scroll --broadcast --verify --
 ### ScrollSepolia
 
 ```
-forge script script/Deploy.s.sol:Deploy --rpc-url scroll-sepolia --broadcast --verify --legacy --ffi
+forge script script/DeploySepolia.s.sol:Deploy --rpc-url scroll-sepolia --broadcast --verify --legacy --ffi
+```
+
+### SepoliaEth
+
+```
+forge script script/Deploy.s.sol:Deploy --rpc-url sepolia --broadcast --verify --legacy --ffi
 ```
 
 ## License

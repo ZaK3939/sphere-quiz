@@ -34,8 +34,10 @@
 [etherscan]
   scroll = { key = "${API_KEY_SCROLL}" }
   scroll-sepolia = { key = "${API_KEY_SCROLL}" }
-
+  sepolia = { key = "${API_KEY_ETHERSCAN}" }
+  
 [rpc_endpoints]
   scroll = "${SCROLL_MAINNET_RPC}"
   scroll-sepolia = "${SCROLL_TESTNET_RPC}"
+  sepolia = "https://eth-sepolia.g.alchemy.com/v2/${API_KEY_SEPOLIA}"
  

@@ -45,6 +45,7 @@ import { scroll, scrollSepolia } from 'viem/chains';
 import { quizData } from 'gate/quiz-data';
 import SphereQuizGameNFTAbi from '../abi/SphereQuizGameNFT.json';
 import { CovalentClient } from '@covalenthq/client-sdk';
+import { getAttackParametersFromContract } from 'gate/sepoliaCall';
 
 type Vector2 = Phaser.Math.Vector2;
 
@@ -86,6 +87,12 @@ enum SphereType {
   Yellow,
   Key,
   Dark, //For Damage
+}
+
+interface AttackParameters {
+  baseAttackPower: number;
+  adjustedVolatility: number;
+  overallAttackParameter: number;
 }
 
 const CHARACTER_SPHERE_TYPES = {
@@ -395,7 +402,7 @@ export default class BattleScene extends BaseScene {
     Align.To.BottomRight(this.scoreText, this.healthEnemy.barFrame, -8, 6);
 
     this.musicCredit = new MusicCredit(this, 0, 0);
-    Align.In.TopRight(this.musicCredit, this.battleBorder, -65, -4);
+    Align.In.TopRight(this.musicCredit, this.battleBorder, -65, -5);
 
     this.stateMachine = new StateMachine(
       'intro',
@@ -502,6 +509,7 @@ export default class BattleScene extends BaseScene {
       this.partyHealth[character].setVisible(true);
     }
   }
+
   async setBattleState(address: Address, bossHP: number) {
     console.log('Setting battle state for address:', address);
     const client = new CovalentClient(import.meta.env.VITE_API_KEY_COVALENT);
@@ -734,7 +742,7 @@ class BattleState {
     return this.enemyStatus.hp < 1;
   }
 
-  executeTurn(turnInputs: TurnInputs): TurnResult {
+  async executeTurn(turnInputs: TurnInputs): Promise<TurnResult> {
     const partyActionResults: Partial<TurnResult['partyActionResults']> = {};
 
     // Character actions
@@ -767,8 +775,11 @@ class BattleState {
 
     let enemyActionResult = null;
     if (this.enemyStatus.hp > 0) {
+      // Get attack parameters from the scene
+      const { baseAttackPower, adjustedVolatility, overallAttackParameter } = await this.getAttackParameters();
+      console.log('Boss Attack Parameters:', baseAttackPower, adjustedVolatility, overallAttackParameter);
       // 全体攻撃の条件を満たしているかどうかを判定
-      const isAllOutAttack = Object.values(this.stockCounts).some((count) => count >= 16);
+      const isAllOutAttack = Object.values(this.stockCounts).some((count) => count >= 8);
 
       if (isAllOutAttack) {
         // 全体攻撃の場合
@@ -780,7 +791,10 @@ class BattleState {
             const characterDefense = this.stockCounts[sphereType];
             const globalDefense = this.stockCounts[SphereType.Yellow];
             const totalDefense = characterDefense + globalDefense;
-            const targetDamage = Math.floor(Math.random() * 25) + 20;
+            // chainlink vol + eth price
+            const targetDamage = Math.floor(
+              overallAttackParameter * (Math.random() * adjustedVolatility + baseAttackPower)
+            );
             const finalDamage = Math.max(0, targetDamage - totalDefense);
             this.partyMemberStatuses[target].hp = Math.max(this.partyMemberStatuses[target].hp - finalDamage, 0);
             return finalDamage;
@@ -800,7 +814,7 @@ class BattleState {
           Object.values(Characters).filter((character) => this.partyMemberStatuses[character].hp > 0)
         );
 
-        let damage = Math.floor(Math.random() * 25) + 30;
+        let damage = Math.floor(Math.random() * adjustedVolatility + baseAttackPower);
         if (turnInputs[target] === BattleActions.Defend) {
           const sphereType = CHARACTER_SPHERE_TYPES[target];
           damage -= this.stockCounts[sphereType] + this.stockCounts[SphereType.Yellow];
@@ -824,6 +838,25 @@ class BattleState {
       enemyActionResult,
       stockCounts: this.stockCounts,
     };
+  }
+
+  async getAttackParameters(): Promise<AttackParameters> {
+    try {
+      const { baseAttackPower, adjustedVolatility, overallAttackParameter } = await getAttackParametersFromContract();
+      return {
+        baseAttackPower,
+        adjustedVolatility,
+        overallAttackParameter,
+      };
+    } catch (error) {
+      console.error('Error getting attack parameters:', error);
+      // デフォルトの攻撃パラメータを返す
+      return {
+        baseAttackPower: 20,
+        adjustedVolatility: 25,
+        overallAttackParameter: 0.8,
+      };
+    }
   }
 }
 
@@ -2592,7 +2625,7 @@ class TurnResultPhaseState extends State {
     await Promise.all(fadeInAnimations);
 
     const { partyActionResults, enemyActionResult, stockCounts } = (scene.currentTurnResult =
-      scene.battleState.executeTurn(scene.currentTurnInputs));
+      await scene.battleState.executeTurn(scene.currentTurnInputs));
 
     // Animate attacks, if needed
     const partyAttacked = Object.values(partyActionResults).some(
