@@ -1912,7 +1912,7 @@ class QuizPhaseState extends State {
       this.shuffleQuestions();
     }
     const currentQuestion = this.remainingQuestions.shift()!;
-    const questionText = `${currentQuestion.question}\n\n`;
+    const questionText = `${currentQuestion.question}\n`;
     const choiceText = currentQuestion.choices.map((choice, index) => `${index + 1}. ${choice}`).join('\n');
     this.dialog.setText(questionText + choiceText);
 
