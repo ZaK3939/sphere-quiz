@@ -3,316 +3,316 @@ export const quizData = [
   // Aztec
   {
     question: 'What is Aztec?',
-    choices: ['A privacy-focused layer 2 blockchain', 'A decentralized exchange', 'A cryptocurrency wallet'],
-    answer: 'A privacy-focused layer 2 blockchain',
+    choices: ['A cryptocurrency wallet', 'A privacy-focused company', 'A decentralized exchange'],
+    answer: 'A privacy-focused company',
   },
   // DoraHacks
   {
-    question: 'What is the main focus of DoraHacks?',
-    choices: ['Hackathons and developer community', 'Decentralized finance', 'Non-fungible tokens'],
+    question: 'DoraHacks focuses on:',
+    choices: ['Non-fungible tokens', 'Hackathons and developer community', 'Decentralized finance'],
     answer: 'Hackathons and developer community',
   },
   // Chainlink
   {
-    question: 'What is Chainlink?',
-    choices: ['A decentralized oracle network', 'A stablecoin platform', 'A yield farming protocol'],
+    question: 'Chainlink is:',
+    choices: ['A yield farming protocol', 'A stablecoin platform', 'A decentralized oracle network'],
     answer: 'A decentralized oracle network',
   },
   {
-    question: 'What do Chainlink oracles provide?',
-    choices: ['Off-chain data to smart contracts', 'Lending and borrowing services', 'Cross-chain interoperability'],
+    question: 'Chainlink oracles provide:',
+    choices: ['Cross-chain interoperability', 'Off-chain data to smart contracts', 'Lending and borrowing services'],
     answer: 'Off-chain data to smart contracts',
   },
   // TheGraph
   {
-    question: 'What is the primary use case of The Graph?',
-    choices: ['Indexing and querying blockchain data', 'Decentralized storage', 'Identity management'],
+    question: 'The Graph is used for:',
+    choices: ['Identity management', 'Indexing and querying blockchain data', 'Decentralized storage'],
     answer: 'Indexing and querying blockchain data',
   },
   {
-    question: 'Which query language does The Graph use?',
-    choices: ['GraphQL', 'SQL', 'REST'],
+    question: 'The Graph uses:',
+    choices: ['REST', 'SQL', 'GraphQL'],
     answer: 'GraphQL',
   },
   // Covalent
   {
-    question: 'What does Covalent provide?',
-    choices: ['Blockchain data API', 'Decentralized exchange', 'Stablecoin minting'],
+    question: 'Covalent provides:',
+    choices: ['Stablecoin minting', 'Blockchain data API', 'Decentralized exchange'],
     answer: 'Blockchain data API',
   },
   {
-    question: 'How many blockchains does Covalent support?',
-    choices: ['Over 30', 'Less than 10', 'Only Ethereum'],
-    answer: 'Over 30',
+    question: 'Covalent supports:',
+    choices: ['Less than 10 blockchains', 'Over 30 blockchains', 'Only Ethereum'],
+    answer: 'Over 30 blockchains',
   },
   // Openzeppelin
   {
-    question: 'What is OpenZeppelin known for?',
+    question: 'OpenZeppelin is known for:',
     choices: [
-      'Smart contract security tools and libraries',
       'Decentralized lending platform',
       'Crypto wallet infrastructure',
+      'Smart contract security tools and libraries',
     ],
     answer: 'Smart contract security tools and libraries',
   },
   // Cyfrin
   {
-    question: 'What is Cyfrin?',
+    question: 'Cyfrin is:',
     choices: [
-      'A privacy-preserving computation platform',
       'A decentralized autonomous organization',
       'A crypto trading bot',
+      'A privacy-preserving computation platform',
     ],
     answer: 'A privacy-preserving computation platform',
   },
   // Ankr
   {
-    question: 'What is the main offering of Ankr?',
-    choices: ['Decentralized Web3 infrastructure', 'Crypto asset management', 'Blockchain interoperability'],
+    question: 'Ankr mainly offers:',
+    choices: ['Blockchain interoperability', 'Decentralized Web3 infrastructure', 'Crypto asset management'],
     answer: 'Decentralized Web3 infrastructure',
   },
   {
-    question: 'Which of the following is not a service provided by Ankr?',
-    choices: ['Staking', 'Node hosting', 'Decentralized exchange'],
+    question: 'Which is not a service by Ankr?',
+    choices: ['Decentralized exchange', 'Staking', 'Node hosting'],
     answer: 'Decentralized exchange',
   },
   // Sindri
   {
-    question: 'What is Sindri?',
-    choices: ['A ZK Developer Cloud', 'A decentralized exchange', 'A layer 2 scaling solution'],
+    question: 'Sindri is:',
+    choices: ['A ZK Developer Cloud', 'A layer 2 scaling solution', 'A decentralized exchange'],
     answer: 'A ZK Developer Cloud',
   },
   {
-    question: 'What does Sindri provide to developers?',
+    question: 'Sindri provides developers:',
     choices: [
-      'Streamlined infrastructure for developing and deploying ZK applications',
-      'A new programming language for smart contracts',
       'A decentralized storage solution',
+      'A new programming language for smart contracts',
+      'Streamlined infrastructure for developing and deploying ZK applications',
     ],
     answer: 'Streamlined infrastructure for developing and deploying ZK applications',
   },
   {
-    question: 'How is Sindri integrated into applications?',
-    choices: ['Via API', 'Through a custom blockchain', 'Using a proprietary programming language'],
+    question: 'Sindri is integrated via:',
+    choices: ['Using a proprietary programming language', 'Via API', 'Through a custom blockchain'],
     answer: 'Via API',
   },
   {
-    question: 'Which of the following is not a feature of the Sindri API?',
-    choices: ['Decentralized storage', 'Serverless proving deployments', 'Built-in acceleration'],
+    question: 'Which is not a Sindri API feature?',
+    choices: ['Built-in acceleration', 'Serverless proving deployments', 'Decentralized storage'],
     answer: 'Decentralized storage',
   },
   // Scroll
   {
-    question: 'What is Scroll?',
-    choices: ['A native zero-knowledge rollup on Ethereum', 'A decentralized lending protocol', 'A cross-chain bridge'],
+    question: 'Scroll is:',
+    choices: ['A decentralized lending protocol', 'A cross-chain bridge', 'A native zero-knowledge rollup on Ethereum'],
     answer: 'A native zero-knowledge rollup on Ethereum',
   },
   {
-    question: 'What is the main benefit of using Scroll?',
-    choices: ['Faster and cheaper transactions', 'Higher staking rewards', 'Improved interoperability'],
+    question: 'The main benefit of Scroll is:',
+    choices: ['Improved interoperability', 'Higher staking rewards', 'Faster and cheaper transactions'],
     answer: 'Faster and cheaper transactions',
   },
   // Aave
   {
-    question: 'What is Aave?',
-    choices: ['A decentralized lending and borrowing protocol', 'A decentralized exchange', 'A stablecoin issuer'],
+    question: 'Aave is:',
+    choices: ['A stablecoin issuer', 'A decentralized lending and borrowing protocol', 'A decentralized exchange'],
     answer: 'A decentralized lending and borrowing protocol',
   },
   {
-    question: 'Which token is used for governance in the Aave protocol?',
-    choices: ['AAVE', 'aTokens', 'aUSD'],
+    question: 'The governance token of Aave is:',
+    choices: ['aUSD', 'AAVE', 'aTokens'],
     answer: 'AAVE',
   },
   // Curve Finance
   {
-    question: 'What is the native token of Curve Finance?',
-    choices: ['CRV', 'veCRV', 'crvUSD'],
+    question: 'The native token of Curve Finance is:',
+    choices: ['crvUSD', 'CRV', 'veCRV'],
     answer: 'CRV',
   },
   // Blast
   {
-    question: 'Which blockchain is Blast built on?',
-    choices: ['Ethereum', 'Solana', 'Binance Smart Chain'],
+    question: 'Blast is built on:',
+    choices: ['Ethereum', 'Binance Smart Chain', 'Solana'],
     answer: 'Ethereum',
   },
   // Monad
   {
-    question: 'What is Monad?',
-    choices: ['A decentralized cloud computing platform', 'A privacy coin', 'A decentralized social network'],
+    question: 'Monad is:',
+    choices: ['A privacy coin', 'A decentralized cloud computing platform', 'A decentralized social network'],
     answer: 'A decentralized cloud computing platform',
   },
   // Berachain
   {
-    question: 'What is the primary goal of Berachain?',
-    choices: ['Scalability', 'Privacy', 'Interoperability'],
+    question: 'The primary goal of Berachain is:',
+    choices: ['Interoperability', 'Privacy', 'Scalability'],
     answer: 'Scalability',
   },
   // Metamask
   {
-    question: 'What is Metamask?',
+    question: 'Metamask is:',
     choices: [
+      'A smart contract auditing tool',
       'A cryptocurrency wallet and browser extension',
       'A decentralized exchange',
-      'A smart contract auditing tool',
     ],
     answer: 'A cryptocurrency wallet and browser extension',
   },
   // Solidity
   {
-    question: 'What is Solidity?',
+    question: 'Solidity is:',
     choices: [
+      'A layer 2 scaling solution',
       'A programming language for smart contracts',
       'A decentralized file storage protocol',
-      'A layer 2 scaling solution',
     ],
     answer: 'A programming language for smart contracts',
   },
   {
-    question: 'Which blockchain is Solidity primarily used for?',
-    choices: ['Ethereum', 'Bitcoin', 'Polkadot'],
+    question: 'Solidity is primarily used for:',
+    choices: ['Polkadot', 'Bitcoin', 'Ethereum'],
     answer: 'Ethereum',
   },
   // Solana
   {
-    question: 'What is Solana?',
+    question: 'Solana is:',
     choices: [
-      'A high-performance blockchain platform',
-      'A decentralized lending protocol',
       'A privacy-focused cryptocurrency',
+      'A decentralized lending protocol',
+      'A high-performance blockchain platform',
     ],
     answer: 'A high-performance blockchain platform',
   },
   {
-    question: 'What consensus mechanism does Solana use?',
-    choices: ['Proof of History', 'Proof of Stake', 'Delegated Proof of Stake'],
+    question: 'Solana uses:',
+    choices: ['Delegated Proof of Stake', 'Proof of Stake', 'Proof of History'],
     answer: 'Proof of History',
   },
   // Farcaster
   {
-    question: 'What is Farcaster?',
+    question: 'Farcaster is:',
     choices: ['A decentralized social network', 'A cross-chain bridge', 'A decentralized exchange'],
     answer: 'A decentralized social network',
   },
   {
-    question: 'What is a smart contract?',
+    question: 'A smart contract is:',
     choices: [
-      'A self-executing contract with the terms written into code',
       'A legal contract signed digitally',
       'A contract that requires human intervention',
+      'A self-executing contract with the terms written into code',
     ],
     answer: 'A self-executing contract with the terms written into code',
   },
   {
-    question: 'What is the purpose of a stablecoin?',
+    question: 'A stablecoin aims to:',
     choices: [
+      'To enable anonymous transactions',
       'To provide a cryptocurrency with a stable value',
       'To facilitate high-risk trading',
-      'To enable anonymous transactions',
     ],
     answer: 'To provide a cryptocurrency with a stable value',
   },
   {
-    question: 'What is yield farming?',
+    question: 'Yield farming is:',
     choices: [
-      'Staking or lending crypto assets to generate returns',
       'The process of mining cryptocurrencies',
       'Buying and holding cryptocurrencies long-term',
+      'Staking or lending crypto assets to generate returns',
     ],
     answer: 'Staking or lending crypto assets to generate returns',
   },
   {
-    question: 'What is an IDO?',
-    choices: ['Initial DEX Offering', 'Initial Decentralized Offering', 'Initial Digital Offering'],
+    question: 'IDO stands for:',
+    choices: ['Initial Digital Offering', 'Initial DEX Offering', 'Initial Decentralized Offering'],
     answer: 'Initial DEX Offering',
   },
   {
-    question: 'What is an atomic swap?',
+    question: 'An atomic swap is:',
     choices: [
       'Exchanging cryptocurrencies without intermediaries',
-      'A type of cryptocurrency trading strategy',
       'Splitting a cryptocurrency into smaller units',
+      'A type of cryptocurrency trading strategy',
     ],
     answer: 'Exchanging cryptocurrencies without intermediaries',
   },
   {
-    question: 'What is the purpose of a crypto faucet?',
+    question: 'A crypto faucet distributes:',
     choices: [
-      'To distribute small amounts of crypto for free',
-      'To store large amounts of cryptocurrency securely',
-      'To facilitate high-frequency trading',
+      'Small amounts of crypto for free',
+      'Large amounts of cryptocurrency securely',
+      'High-frequency trading signals',
     ],
-    answer: 'To distribute small amounts of crypto for free',
+    answer: 'Small amounts of crypto for free',
   },
   {
-    question: 'What is a DAO?',
+    question: 'A DAO is:',
     choices: [
+      'A type of cryptocurrency mining pool',
       'A decentralized autonomous organization',
       'A centralized org managing crypto projects',
-      'A type of cryptocurrency mining pool',
     ],
     answer: 'A decentralized autonomous organization',
   },
   {
-    question: 'What is an NFT?',
+    question: 'An NFT represents:',
     choices: [
-      'A unique digital asset representing ownership',
+      'Ownership of a unique digital asset',
       'A cryptocurrency that can be exchanged for any other',
       'A digital token used for staking',
     ],
-    answer: 'A unique digital asset representing ownership',
+    answer: 'Ownership of a unique digital asset',
   },
   {
-    question: 'What is the purpose of a blockchain explorer?',
+    question: 'A blockchain explorer is used to:',
     choices: [
-      'To browse and analyze data stored on a blockchain',
-      'To facilitate peer-to-peer transactions',
-      'To mine new blocks on a blockchain network',
+      'Mine new blocks on a blockchain network',
+      'Browse and analyze data stored on a blockchain',
+      'Facilitate peer-to-peer transactions',
     ],
-    answer: 'To browse and analyze data stored on a blockchain',
+    answer: 'Browse and analyze data stored on a blockchain',
   },
   {
-    question: 'What is a cryptocurrency mining pool?',
+    question: 'A crypto mining pool is:',
     choices: [
+      'A multi-cryptocurrency wallet',
       'A group of miners combining computational resources',
       'A centralized exchange for trading cryptocurrencies',
-      'A multi-cryptocurrency wallet',
     ],
     answer: 'A group of miners combining computational resources',
   },
   {
-    question: 'What is a flash loan?',
+    question: 'A flash loan is:',
     choices: [
-      'An uncollateralized loan borrowed and repaid in a single tx',
       'A long-term cryptocurrency investment strategy',
+      'An uncollateralized loan borrowed and repaid in a single tx',
       'A loan requiring 200% collateral',
     ],
     answer: 'An uncollateralized loan borrowed and repaid in a single tx',
   },
   {
-    question: 'What is a crypto airdrop?',
+    question: 'A crypto airdrop distributes:',
     choices: [
-      'A free distribution of crypto',
+      'A free allocation of crypto',
       'A type of cryptocurrency mining algorithm',
       'A method for securely storing private keys',
     ],
-    answer: 'A free distribution of crypto',
+    answer: 'A free allocation of crypto',
   },
   {
-    question: 'What is a DeFi aggregator?',
+    question: 'A DeFi aggregator is:',
     choices: [
       'A platform combining multiple DeFi protocols',
-      'A DeFi-supporting cryptocurrency wallet',
       'A decentralized exchange for DeFi tokens',
+      'A DeFi-supporting cryptocurrency wallet',
     ],
     answer: 'A platform combining multiple DeFi protocols',
   },
   {
-    question: 'What is a blockchain oracle?',
+    question: 'A blockchain oracle provides:',
     choices: [
-      'A system providing external data to contracts',
+      'External data to smart contracts',
       'A crypto wallet for large fund storage',
       'A proof-of-stake consensus mechanism',
     ],
-    answer: 'A system providing external data to contracts',
+    answer: 'External data to smart contracts',
   },
 ];
