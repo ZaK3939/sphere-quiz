@@ -5,6 +5,20 @@ import { createPublicClient, createWalletClient, http, custom, Address } from 'v
 import { scroll } from 'viem/chains';
 import { getbossHp } from 'gate/contactCall';
 
+interface MintKeyEvent {
+  keyId: string;
+  player: string;
+  score: string;
+  to: string;
+  tokenId: string;
+}
+
+interface Response {
+  data: {
+    mintKeyEvents: MintKeyEvent[];
+  };
+}
+
 export default class LoadingScene extends BaseScene {
   loadingCount!: Phaser.GameObjects.Sprite;
   publicClient: ReturnType<typeof createPublicClient>;
@@ -14,6 +28,7 @@ export default class LoadingScene extends BaseScene {
   connectButton!: Phaser.GameObjects.Text;
   battleScene!: BattleScene;
   titleText!: Phaser.GameObjects.BitmapText;
+  topScoreText!: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super({
@@ -89,6 +104,12 @@ export default class LoadingScene extends BaseScene {
       .setTint(0xffffff)
       .setLetterSpacing(2);
 
+    this.topScoreText = this.add
+      .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY + 100, 'pixelFont', 'Top Score: -', 16)
+      .setOrigin(0.5)
+      .setTint(0xffffff);
+
+    this.fetchTopScore();
     // リソースロード処理
     this.battleScene = this.scene.get('battle') as BattleScene;
     asyncLoad(this, () => {
@@ -114,6 +135,38 @@ export default class LoadingScene extends BaseScene {
       console.error('WalletConnect Error:', error);
     }
   };
+
+  private async fetchTopScore() {
+    try {
+      const query = `
+        query {
+          mintKeyEvents(orderBy: score, orderDirection: desc, first: 1) {
+            score
+          }
+        }
+      `;
+
+      const response = await fetch('https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: Response = await response.json();
+      if (data.data.mintKeyEvents.length > 0) {
+        const topScore = data.data.mintKeyEvents[0].score;
+        this.topScoreText.setText(`Top Score: ${topScore}`);
+      }
+    } catch (error) {
+      console.error('Error fetching top score:', error);
+    }
+  }
 
   private checkTransition = async (address: Address) => {
     if (this.walletConnected && this.resourcesLoaded) {
