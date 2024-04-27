@@ -1873,7 +1873,7 @@ class QuizPhaseState extends State {
     this.loadQuizData();
     this.dialog = new Dialog(scene, scene.battleBorder.x, scene.battleBorder.y - 10, {
       width: 240,
-      height: 90,
+      height: 95,
     }).setDepth(DEPTH_MODAL);
     this.dialogOverlay = this.scene.add
       .rectangle(this.dialog.box.x, this.dialog.box.y, this.dialog.box.width, this.dialog.box.height, 0x000000, 0.5)
@@ -1912,7 +1912,7 @@ class QuizPhaseState extends State {
       this.shuffleQuestions();
     }
     const currentQuestion = this.remainingQuestions.shift()!;
-    const questionText = `${currentQuestion.question}\n`;
+    const questionText = `${currentQuestion.question}\n\n`;
     const choiceText = currentQuestion.choices.map((choice, index) => `${index + 1}. ${choice}`).join('\n');
     this.dialog.setText(questionText + choiceText);
 
