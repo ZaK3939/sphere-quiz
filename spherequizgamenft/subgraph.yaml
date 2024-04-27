@@ -1,0 +1,71 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: SphereQuizGameNFT
+    network: scroll-sepolia
+    source:
+      address: "0x82845dfa6d2185547480372eedf213d4c2976da3"
+      abi: SphereQuizGameNFT
+      startBlock: 4067401
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - BaseURISet
+        - BaseURLSet
+        - ChestOpened
+        - GameDifficultySet
+        - GameReset
+        - MintFeeSet
+        - MintKeyEvent
+        - OwnershipHandoverCanceled
+        - OwnershipHandoverRequested
+        - OwnershipTransferred
+        - ProtocolFeeDestinationSet
+        - RevealedSet
+        - SignerSet
+        - Transfer
+      abis:
+        - name: SphereQuizGameNFT
+          file: ./abis/SphereQuizGameNFT.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: BaseURISet(string)
+          handler: handleBaseURISet
+        - event: BaseURLSet(string)
+          handler: handleBaseURLSet
+        - event: ChestOpened(indexed address,uint256)
+          handler: handleChestOpened
+        - event: GameDifficultySet(uint256)
+          handler: handleGameDifficultySet
+        - event: GameReset()
+          handler: handleGameReset
+        - event: MintFeeSet(uint256)
+          handler: handleMintFeeSet
+        - event: MintKeyEvent(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleMintKeyEvent
+        - event: OwnershipHandoverCanceled(indexed address)
+          handler: handleOwnershipHandoverCanceled
+        - event: OwnershipHandoverRequested(indexed address)
+          handler: handleOwnershipHandoverRequested
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: ProtocolFeeDestinationSet(address)
+          handler: handleProtocolFeeDestinationSet
+        - event: RevealedSet(bool)
+          handler: handleRevealedSet
+        - event: SignerSet(address,address)
+          handler: handleSignerSet
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/sphere-quiz-game-nft.ts
