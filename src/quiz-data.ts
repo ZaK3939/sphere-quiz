@@ -237,17 +237,17 @@ export const quizData = [
   {
     question: 'What is the purpose of a crypto faucet?',
     choices: [
-      'To distribute small amounts of cryptocurrency for free',
+      'To distribute small amounts of crypto for free',
       'To store large amounts of cryptocurrency securely',
       'To facilitate high-frequency trading',
     ],
-    answer: 'To distribute small amounts of cryptocurrency for free',
+    answer: 'To distribute small amounts of crypto for free',
   },
   {
     question: 'What is a DAO?',
     choices: [
       'A decentralized autonomous organization',
-      'A centralized organization managing crypto projects',
+      'A centralized org managing crypto projects',
       'A type of cryptocurrency mining pool',
     ],
     answer: 'A decentralized autonomous organization',
@@ -282,20 +282,20 @@ export const quizData = [
   {
     question: 'What is a flash loan?',
     choices: [
-      'An uncollateralized loan borrowed and repaid in a single transaction',
+      'An uncollateralized loan borrowed and repaid in a single tx',
       'A long-term cryptocurrency investment strategy',
       'A loan requiring 200% collateral',
     ],
-    answer: 'An uncollateralized loan borrowed and repaid in a single transaction',
+    answer: 'An uncollateralized loan borrowed and repaid in a single tx',
   },
   {
     question: 'What is a crypto airdrop?',
     choices: [
-      'A free distribution of cryptocurrency or tokens',
+      'A free distribution of crypto',
       'A type of cryptocurrency mining algorithm',
       'A method for securely storing private keys',
     ],
-    answer: 'A free distribution of cryptocurrency or tokens',
+    answer: 'A free distribution of crypto',
   },
   {
     question: 'What is a DeFi aggregator?',
@@ -307,21 +307,12 @@ export const quizData = [
     answer: 'A platform combining multiple DeFi protocols',
   },
   {
-    question: 'What is a crypto index fund?',
-    choices: [
-      'An investment fund tracking a basket of cryptocurrencies',
-      'A decentralized lending platform using crypto collateral',
-      'A blockchain-based supply chain management system',
-    ],
-    answer: 'An investment fund tracking a basket of cryptocurrencies',
-  },
-  {
     question: 'What is a blockchain oracle?',
     choices: [
-      'A system providing external data to smart contracts',
-      'A cryptocurrency wallet for large fund storage',
+      'A system providing external data to contracts',
+      'A crypto wallet for large fund storage',
       'A proof-of-stake consensus mechanism',
     ],
-    answer: 'A system providing external data to smart contracts',
+    answer: 'A system providing external data to contracts',
   },
 ];
