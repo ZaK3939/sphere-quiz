@@ -71,6 +71,10 @@ for await (const resp of client.TransactionService.getAllTransactionsForAddress(
 
 https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
 
+### The Graph
+
+https://api.studio.thegraph.com/query/29168/spherequizgamenft/v0.0.1
+
 ## Contract
 
 #### SepoliaScroll
