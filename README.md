@@ -47,7 +47,13 @@ SphereQuizGame is an example of gamification filled with the allure of crypto. I
 
 ## Architecture
 
-- Todo
+### Data Feed
+
+![DataFeed](dataFeed.png)
+
+### Battle End
+
+![Battle End](battleEnd.png)
 
 ## Tech Stack
 
