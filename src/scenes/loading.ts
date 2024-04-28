@@ -203,7 +203,7 @@ export default class LoadingScene extends BaseScene {
   }
 
   async countdown() {
-    // カウントダウンアニメーション
+    this.topScoreText.setText(`Game is ready!`);
     await asyncAnimation(this.loadingCount, 'loadingCountdown'); // カウントダウン
     this.scene.stop(); // シーンを停止
   }
