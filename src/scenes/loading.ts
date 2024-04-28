@@ -198,6 +198,10 @@ export default class LoadingScene extends BaseScene {
     this.topScoreText.setText(`getting Histrory...`);
   }
 
+  async setParameter() {
+    this.topScoreText.setText(`creating your characters...`);
+  }
+
   async countdown() {
     // カウントダウンアニメーション
     await asyncAnimation(this.loadingCount, 'loadingCountdown'); // カウントダウン

@@ -524,6 +524,7 @@ export default class BattleScene extends BaseScene {
     }
 
     if (latestTransaction) {
+      await this.scene.get<LoadingScene>('loading').setParameter();
       console.log('latestTransaction', latestTransaction);
 
       // 最新のトランザクションのガス代を取得
