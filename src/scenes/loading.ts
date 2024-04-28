@@ -178,10 +178,10 @@ export default class LoadingScene extends BaseScene {
 
       this.loadingCount.on('pointerup', async () => {
         this.loadingCount.disableInteractive(); // インタラクションを無効化
-        await asyncAnimation(this.loadingCount, 'loadingStartToEmpty'); // ロード完了アニメーション
         if (this.walletClient) {
           const bossHp = await getbossHp(); // ボスHPを取得
           console.log('bossHp:', bossHp);
+          await asyncAnimation(this.loadingCount, 'loadingStartToEmpty'); // ロード完了アニメーション
 
           await this.battleScene.setBattleState(address, Number(bossHp)); // バトルステートを設定
           this.scene.run('battle'); // バトルシーンを開始
