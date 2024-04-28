@@ -514,6 +514,7 @@ export default class BattleScene extends BaseScene {
     console.log('Setting battle state for address:', address);
     const client = new CovalentClient(import.meta.env.VITE_API_KEY_COVALENT);
     let latestTransaction = null;
+    await this.scene.get<LoadingScene>('loading').loadTransaction();
     for await (const resp of client.TransactionService.getAllTransactionsForAddress('scroll-mainnet', address, {
       noLogs: true,
       blockSignedAtAsc: false,

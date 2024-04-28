@@ -194,6 +194,10 @@ export default class LoadingScene extends BaseScene {
     }
   };
 
+  async loadTransaction() {
+    this.topScoreText.setText(`getting Histrory...`);
+  }
+
   async countdown() {
     // カウントダウンアニメーション
     await asyncAnimation(this.loadingCount, 'loadingCountdown'); // カウントダウン
