@@ -195,11 +195,11 @@ export default class LoadingScene extends BaseScene {
   };
 
   async loadTransaction() {
-    this.topScoreText.setText(`getting Histrory...`);
+    this.topScoreText.setText(`Getting Histrory...`);
   }
 
   async setParameter() {
-    this.topScoreText.setText(`creating characters...`);
+    this.topScoreText.setText(`Creating Characters...`);
   }
 
   async countdown() {

@@ -2608,7 +2608,7 @@ class TurnResultPhaseState extends State {
       for (const character of defendingCharacters) {
         const status = scene.battleState.partyMemberStatuses[character];
         const maxRecovery = status.maxHp - status.hp;
-        const baseRecovery = Math.floor(scene.clearedSpheresThisTurn / 2);
+        const baseRecovery = Math.floor(scene.clearedSpheresThisTurn);
         const characterRecovery = scene.battleState.stockCounts[CHARACTER_SPHERE_TYPES[character]];
         const actualRecovery = Math.min(baseRecovery + characterRecovery, maxRecovery);
 
