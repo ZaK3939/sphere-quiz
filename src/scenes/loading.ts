@@ -101,21 +101,21 @@ export default class LoadingScene extends BaseScene {
       .setTint(0xffffff);
     this.fetchTopScore(); //Get top score from Graph
 
+    this.connectButton = this.add
+      .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
+        fontSize: '20px',
+        color: '#fff',
+      })
+      .setOrigin(0.5);
+
+    this.connectButton.setInteractive({ useHandCursor: true });
+    this.connectButton.on('pointerdown', this.onConnect);
     // リソースロード処理
     this.battleScene = this.scene.get('battle') as BattleScene;
     asyncLoad(this, () => {
       this.battleScene.loadResources(this); // リソースロード
     }).then(() => {
       this.resourcesLoaded = true; // リソースロード完了
-      this.connectButton = this.add
-        .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
-          fontSize: '20px',
-          color: '#fff',
-        })
-        .setOrigin(0.5);
-
-      this.connectButton.setInteractive({ useHandCursor: true });
-      this.connectButton.on('pointerdown', this.onConnect);
     });
   }
 
