@@ -199,7 +199,7 @@ export default class LoadingScene extends BaseScene {
   }
 
   async setParameter() {
-    this.topScoreText.setText(`creating your characters...`);
+    this.topScoreText.setText(`creating characters...`);
   }
 
   async countdown() {
