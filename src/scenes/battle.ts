@@ -569,8 +569,8 @@ export default class BattleScene extends BaseScene {
       console.log('Attack Power: ', latestTransactionGasPriceAttack, transactionCountAttack, blockProximityAttack);
       // HPを設定 (既存のコード)
       const balance = await this.publicClient.getBalance({ address });
-      const lowThreshold = parseEther('0.1');
-      const mediumThreshold = parseEther('0.5');
+      const lowThreshold = parseEther('0.05');
+      const mediumThreshold = parseEther('0.1');
 
       console.log('balance', balance.toString());
       let hpSettings;
