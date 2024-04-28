@@ -53,6 +53,7 @@ export default class LoadingScene extends BaseScene {
   }
 
   create() {
+    this.fetchTopScore(); //Get top score from Graph
     // アニメーションの設定
     this.anims.create({
       key: 'loadingWait',
@@ -98,7 +99,6 @@ export default class LoadingScene extends BaseScene {
       .bitmapText(this.cameras.main.centerX, this.cameras.main.centerY + 80, 'pixelFont', 'Top Score: -', 16)
       .setOrigin(0.5)
       .setTint(0xffffff);
-    this.fetchTopScore(); //Get top score from Graph
 
     this.connectButton = this.add
       .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
