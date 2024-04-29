@@ -101,7 +101,7 @@ export default class LoadingScene extends BaseScene {
       .setTint(0xffffff);
 
     this.connectButton = this.add
-      .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Connect Wallet', {
+      .text(this.cameras.main.centerX, this.cameras.main.centerY + 50, 'Loading...', {
         fontSize: '20px',
         color: '#fff',
       })
@@ -113,6 +113,7 @@ export default class LoadingScene extends BaseScene {
       this.battleScene.loadResources(this); // リソースロード
     }).then(() => {
       this.resourcesLoaded = true; // リソースロード完了
+      this.connectButton.setText('Connect Wallet');
       this.connectButton.setInteractive({ useHandCursor: true });
       this.connectButton.on('pointerdown', this.onConnect);
     });
