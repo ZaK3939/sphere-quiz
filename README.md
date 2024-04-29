@@ -65,7 +65,7 @@ https://www.ankr.com/
 
 ### Covalent
 
-To fetch the latest transaction for a specific address on the Scroll Mainnet, you can use the getAllTransactionsForAddress method from the TransactionService:
+To fetch the latest transaction for a specific address on the Scroll Mainnet, we uses the getAllTransactionsForAddress method for deciding player characters initial status.
 
 ```
 let latestTransaction = null;
@@ -80,7 +80,7 @@ for await (const resp of client.TransactionService.getAllTransactionsForAddress(
 ```
 
 - Code
-  https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
+  https://github.com/ZaK3939/sphere-quiz/blob/24f2e375631c146e0f4a6c87d1b08ee77a2d4b27/src/scenes/battle.ts#L536
 
 ### The Graph
 
@@ -127,7 +127,7 @@ async getAttackParameters(): Promise<AttackParameters> {
   }
 ```
 
-- Frontend https://github.com/ZaK3939/sphere-quiz/blob/main/src/scenes/battle.ts
+- Frontend https://github.com/ZaK3939/sphere-quiz/blob/24f2e375631c146e0f4a6c87d1b08ee77a2d4b27/src/scenes/battle.ts#L798
 - Contract https://github.com/ZaK3939/sphere-quiz/blob/main/contract/src/BossStats.sol
 
 ## Contract
