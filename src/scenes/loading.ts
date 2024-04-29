@@ -107,14 +107,14 @@ export default class LoadingScene extends BaseScene {
       })
       .setOrigin(0.5);
 
-    this.connectButton.setInteractive({ useHandCursor: true });
-    this.connectButton.on('pointerdown', this.onConnect);
     // リソースロード処理
     this.battleScene = this.scene.get('battle') as BattleScene;
     asyncLoad(this, () => {
       this.battleScene.loadResources(this); // リソースロード
     }).then(() => {
       this.resourcesLoaded = true; // リソースロード完了
+      this.connectButton.setInteractive({ useHandCursor: true });
+      this.connectButton.on('pointerdown', this.onConnect);
     });
   }
 
